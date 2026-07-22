@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fof-docx-validator"
+version = "1.0.0"
+description = "Validate bookmark-filled FOF due-diligence DOCX files"
+requires-python = ">=3.10"
+dependencies = ["lxml", "python-docx"]
+
+[tool.setuptools]
+packages = ["validator"]
+package-dir = {validator = "."}

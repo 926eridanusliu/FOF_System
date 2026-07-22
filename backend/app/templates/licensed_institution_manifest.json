@@ -1,0 +1,457 @@
+{
+  "reference_template": "licensed_correct_template.docx",
+  "bookmark_count": 69,
+  "bookmarks": [
+    {
+      "bookmark": "cover_manager_name",
+      "type": "cover",
+      "prompt": "管理人名称"
+    },
+    {
+      "bookmark": "cover_product_name",
+      "type": "cover",
+      "prompt": "产品名称"
+    },
+    {
+      "bookmark": "cover_investigator",
+      "type": "cover",
+      "prompt": "调查人员"
+    },
+    {
+      "bookmark": "cover_report_date",
+      "type": "cover",
+      "prompt": "报告日期"
+    },
+    {
+      "bookmark": "cover_strategy_stock_index_enhanced",
+      "type": "cover_checkbox",
+      "prompt": "策略类型  ：股票多空策略：□指数增强    □股票量化选股  □股票主观多头 □宏观对冲"
+    },
+    {
+      "bookmark": "cover_strategy_stock_quant",
+      "type": "cover_checkbox",
+      "prompt": "策略类型  ：股票多空策略：□指数增强    □股票量化选股  □股票主观多头 □宏观对冲"
+    },
+    {
+      "bookmark": "cover_strategy_stock_discretionary",
+      "type": "cover_checkbox",
+      "prompt": "策略类型  ：股票多空策略：□指数增强    □股票量化选股  □股票主观多头 □宏观对冲"
+    },
+    {
+      "bookmark": "cover_strategy_macro_hedge",
+      "type": "cover_checkbox",
+      "prompt": "策略类型  ：股票多空策略：□指数增强    □股票量化选股  □股票主观多头 □宏观对冲"
+    },
+    {
+      "bookmark": "cover_strategy_market_neutral",
+      "type": "cover_checkbox",
+      "prompt": "相对价值策略：□市场中性 □期货及期权套利   □日内回转（T0）"
+    },
+    {
+      "bookmark": "cover_strategy_futures_options_arbitrage",
+      "type": "cover_checkbox",
+      "prompt": "相对价值策略：□市场中性 □期货及期权套利   □日内回转（T0）"
+    },
+    {
+      "bookmark": "cover_strategy_t0",
+      "type": "cover_checkbox",
+      "prompt": "相对价值策略：□市场中性 □期货及期权套利   □日内回转（T0）"
+    },
+    {
+      "bookmark": "cover_strategy_bond_pure",
+      "type": "cover_checkbox",
+      "prompt": "债 券 策 略 ：□纯债 □债券增强 □债券复合 □可转债"
+    },
+    {
+      "bookmark": "cover_strategy_bond_enhanced",
+      "type": "cover_checkbox",
+      "prompt": "债 券 策 略 ：□纯债 □债券增强 □债券复合 □可转债"
+    },
+    {
+      "bookmark": "cover_strategy_bond_composite",
+      "type": "cover_checkbox",
+      "prompt": "债 券 策 略 ：□纯债 □债券增强 □债券复合 □可转债"
+    },
+    {
+      "bookmark": "cover_strategy_convertible_bond",
+      "type": "cover_checkbox",
+      "prompt": "债 券 策 略 ：□纯债 □债券增强 □债券复合 □可转债"
+    },
+    {
+      "bookmark": "cover_strategy_futures_quant_trend",
+      "type": "cover_checkbox",
+      "prompt": "管理期货策略：□期货量化趋势  □期货主观"
+    },
+    {
+      "bookmark": "cover_strategy_futures_discretionary",
+      "type": "cover_checkbox",
+      "prompt": "管理期货策略：□期货量化趋势  □期货主观"
+    },
+    {
+      "bookmark": "cover_strategy_composite",
+      "type": "cover_checkbox",
+      "prompt": "□复合策略"
+    },
+    {
+      "bookmark": "cover_strategy_other_text",
+      "type": "cover",
+      "prompt": "其他投资策略"
+    },
+    {
+      "bookmark": "table_1_row0_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 0,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row1_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 1,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row2_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 2,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row3_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 3,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row4_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 4,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row5_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 5,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row6_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 6,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row7_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 7,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row8_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 8,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row9_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 9,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row10_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 10,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row11_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 11,
+      "col": 1
+    },
+    {
+      "bookmark": "table_2_row1_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 2,
+      "row": 1,
+      "col": 0
+    },
+    {
+      "bookmark": "table_2_row1_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 2,
+      "row": 1,
+      "col": 1
+    },
+    {
+      "bookmark": "table_2_row2_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 2,
+      "row": 2,
+      "col": 0
+    },
+    {
+      "bookmark": "table_2_row2_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 2,
+      "row": 2,
+      "col": 1
+    },
+    {
+      "bookmark": "table_2_row3_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 2,
+      "row": 3,
+      "col": 0
+    },
+    {
+      "bookmark": "table_2_row3_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 2,
+      "row": 3,
+      "col": 1
+    },
+    {
+      "bookmark": "table_2_row4_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 2,
+      "row": 4,
+      "col": 0
+    },
+    {
+      "bookmark": "table_2_row4_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 2,
+      "row": 4,
+      "col": 1
+    },
+    {
+      "bookmark": "table_2_row5_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 2,
+      "row": 5,
+      "col": 0
+    },
+    {
+      "bookmark": "table_2_row5_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 2,
+      "row": 5,
+      "col": 1
+    },
+    {
+      "bookmark": "table_3_row1_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 3,
+      "row": 1,
+      "col": 0
+    },
+    {
+      "bookmark": "table_3_row1_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 3,
+      "row": 1,
+      "col": 1
+    },
+    {
+      "bookmark": "table_3_row2_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 3,
+      "row": 2,
+      "col": 0
+    },
+    {
+      "bookmark": "table_3_row2_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 3,
+      "row": 2,
+      "col": 1
+    },
+    {
+      "bookmark": "table_3_row3_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 3,
+      "row": 3,
+      "col": 0
+    },
+    {
+      "bookmark": "table_3_row3_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 3,
+      "row": 3,
+      "col": 1
+    },
+    {
+      "bookmark": "qa_section1_research_team",
+      "type": "qa",
+      "prompt": "投研团队情况",
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "qa_section2_strategy_logic",
+      "type": "qa",
+      "prompt": "策略逻辑概述",
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "qa_section2_nav_history",
+      "type": "qa",
+      "prompt": "成立以来净值走势",
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "qa_section2_max_drawdowns",
+      "type": "qa",
+      "prompt": "历史最大的三次回撤及策略调整",
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "qa_section2_industry_allocation",
+      "type": "qa",
+      "prompt": "行业配置情况",
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "qa_section2_holder_structure",
+      "type": "qa",
+      "prompt": "持有人结构",
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "qa_section3_manager_bio",
+      "type": "qa",
+      "prompt": "基金经理简介",
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "qa_section4_credit_screenshot_1",
+      "type": "qa_attachment",
+      "prompt": "全国企业信用信息公示系统截图",
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "qa_section4_credit_screenshot_2",
+      "type": "qa_attachment",
+      "prompt": "中国执行信息公开网截图",
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "qa_section4_credit_screenshot_3",
+      "type": "qa_attachment",
+      "prompt": "证券期货市场失信记录查询平台截图",
+      "insertion_mode": "append_after_label"
+    },
+    {
+      "bookmark": "qa_section5_conclusion",
+      "type": "qa",
+      "prompt": "结论及申请入池理由",
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "attachment_extra_1",
+      "type": "qa",
+      "prompt": "补充附件1",
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "attachment_extra_2",
+      "type": "qa",
+      "prompt": "补充附件2",
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "attachment_extra_3",
+      "type": "qa",
+      "prompt": "补充附件3",
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "attachment_extra_4",
+      "type": "qa",
+      "prompt": "补充附件4",
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "attachment_extra_5",
+      "type": "qa",
+      "prompt": "补充附件5",
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "attachment_extra_6",
+      "type": "qa",
+      "prompt": "补充附件6",
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "attachment_extra_7",
+      "type": "qa",
+      "prompt": "补充附件7",
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "attachment_extra_8",
+      "type": "qa",
+      "prompt": "补充附件8",
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "attachment_extra_9",
+      "type": "qa",
+      "prompt": "补充附件9",
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "attachment_extra_10",
+      "type": "qa",
+      "prompt": "补充附件10",
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "attachment_extra_11",
+      "type": "qa",
+      "prompt": "补充附件11",
+      "insertion_mode": "blank_paragraph"
+    }
+  ]
+}

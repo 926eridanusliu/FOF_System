@@ -1,0 +1,2953 @@
+{
+  "reference_template": "correct_template.docx",
+  "bookmark_count": 376,
+  "bookmarks": [
+    {
+      "bookmark": "cover_manager_name",
+      "type": "cover",
+      "prompt": "管理人名称"
+    },
+    {
+      "bookmark": "cover_product_name",
+      "type": "cover",
+      "prompt": "产品名称"
+    },
+    {
+      "bookmark": "cover_investigator",
+      "type": "cover",
+      "prompt": "调查人员"
+    },
+    {
+      "bookmark": "cover_report_date",
+      "type": "cover",
+      "prompt": "报告日期"
+    },
+    {
+      "bookmark": "cover_strategy_stock_index_enhanced",
+      "type": "cover_checkbox",
+      "prompt": "策略类型  ：股票多空策略：□指数增强    □股票量化选股  □股票主观多头 □宏观对冲"
+    },
+    {
+      "bookmark": "cover_strategy_stock_quant",
+      "type": "cover_checkbox",
+      "prompt": "策略类型  ：股票多空策略：□指数增强    □股票量化选股  □股票主观多头 □宏观对冲"
+    },
+    {
+      "bookmark": "cover_strategy_stock_discretionary",
+      "type": "cover_checkbox",
+      "prompt": "策略类型  ：股票多空策略：□指数增强    □股票量化选股  □股票主观多头 □宏观对冲"
+    },
+    {
+      "bookmark": "cover_strategy_macro_hedge",
+      "type": "cover_checkbox",
+      "prompt": "策略类型  ：股票多空策略：□指数增强    □股票量化选股  □股票主观多头 □宏观对冲"
+    },
+    {
+      "bookmark": "cover_strategy_market_neutral",
+      "type": "cover_checkbox",
+      "prompt": "相对价值策略：□市场中性 □期货及期权套利   □日内回转（T0）"
+    },
+    {
+      "bookmark": "cover_strategy_futures_options_arbitrage",
+      "type": "cover_checkbox",
+      "prompt": "相对价值策略：□市场中性 □期货及期权套利   □日内回转（T0）"
+    },
+    {
+      "bookmark": "cover_strategy_t0",
+      "type": "cover_checkbox",
+      "prompt": "相对价值策略：□市场中性 □期货及期权套利   □日内回转（T0）"
+    },
+    {
+      "bookmark": "cover_strategy_bond_pure",
+      "type": "cover_checkbox",
+      "prompt": "债 券 策 略 ：□纯债 □债券增强 □债券复合 □可转债"
+    },
+    {
+      "bookmark": "cover_strategy_bond_enhanced",
+      "type": "cover_checkbox",
+      "prompt": "债 券 策 略 ：□纯债 □债券增强 □债券复合 □可转债"
+    },
+    {
+      "bookmark": "cover_strategy_bond_composite",
+      "type": "cover_checkbox",
+      "prompt": "债 券 策 略 ：□纯债 □债券增强 □债券复合 □可转债"
+    },
+    {
+      "bookmark": "cover_strategy_convertible_bond",
+      "type": "cover_checkbox",
+      "prompt": "债 券 策 略 ：□纯债 □债券增强 □债券复合 □可转债"
+    },
+    {
+      "bookmark": "cover_strategy_futures_quant_trend",
+      "type": "cover_checkbox",
+      "prompt": "管理期货策略：□期货量化趋势  □期货主观"
+    },
+    {
+      "bookmark": "cover_strategy_futures_discretionary",
+      "type": "cover_checkbox",
+      "prompt": "管理期货策略：□期货量化趋势  □期货主观"
+    },
+    {
+      "bookmark": "cover_strategy_composite",
+      "type": "cover_checkbox",
+      "prompt": "□复合策略"
+    },
+    {
+      "bookmark": "cover_strategy_other_text",
+      "type": "cover",
+      "prompt": "其他投资策略"
+    },
+    {
+      "bookmark": "table_1_row0_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 0,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row1_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 1,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row2_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 2,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row3_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 3,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row4_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 4,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row5_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 5,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row6_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 6,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row7_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 7,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row8_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 8,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row9_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 9,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row10_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 10,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row11_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 11,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row12_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 12,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row13_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 13,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row14_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 14,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row15_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 15,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row16_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 16,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row17_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 17,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row18_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 18,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row19_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 19,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row20_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 20,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row21_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 21,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row22_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 22,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row23_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 23,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row24_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 24,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row25_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 25,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row26_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 26,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row27_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 27,
+      "col": 1
+    },
+    {
+      "bookmark": "table_1_row28_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 1,
+      "row": 28,
+      "col": 1
+    },
+    {
+      "bookmark": "table_2_row1_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 2,
+      "row": 1,
+      "col": 0
+    },
+    {
+      "bookmark": "table_2_row1_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 2,
+      "row": 1,
+      "col": 1
+    },
+    {
+      "bookmark": "table_2_row1_col2",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 2,
+      "row": 1,
+      "col": 2
+    },
+    {
+      "bookmark": "table_2_row1_col3",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 2,
+      "row": 1,
+      "col": 3
+    },
+    {
+      "bookmark": "table_2_row2_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 2,
+      "row": 2,
+      "col": 0
+    },
+    {
+      "bookmark": "table_2_row2_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 2,
+      "row": 2,
+      "col": 1
+    },
+    {
+      "bookmark": "table_2_row2_col2",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 2,
+      "row": 2,
+      "col": 2
+    },
+    {
+      "bookmark": "table_2_row2_col3",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 2,
+      "row": 2,
+      "col": 3
+    },
+    {
+      "bookmark": "table_2_row3_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 2,
+      "row": 3,
+      "col": 0
+    },
+    {
+      "bookmark": "table_2_row3_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 2,
+      "row": 3,
+      "col": 1
+    },
+    {
+      "bookmark": "table_2_row3_col2",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 2,
+      "row": 3,
+      "col": 2
+    },
+    {
+      "bookmark": "table_2_row3_col3",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 2,
+      "row": 3,
+      "col": 3
+    },
+    {
+      "bookmark": "table_2_row4_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 2,
+      "row": 4,
+      "col": 0
+    },
+    {
+      "bookmark": "table_2_row4_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 2,
+      "row": 4,
+      "col": 1
+    },
+    {
+      "bookmark": "table_2_row4_col2",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 2,
+      "row": 4,
+      "col": 2
+    },
+    {
+      "bookmark": "table_2_row4_col3",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 2,
+      "row": 4,
+      "col": 3
+    },
+    {
+      "bookmark": "table_2_row5_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 2,
+      "row": 5,
+      "col": 0
+    },
+    {
+      "bookmark": "table_2_row5_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 2,
+      "row": 5,
+      "col": 1
+    },
+    {
+      "bookmark": "table_2_row5_col2",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 2,
+      "row": 5,
+      "col": 2
+    },
+    {
+      "bookmark": "table_2_row5_col3",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 2,
+      "row": 5,
+      "col": 3
+    },
+    {
+      "bookmark": "table_3_row1_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 3,
+      "row": 1,
+      "col": 0
+    },
+    {
+      "bookmark": "table_3_row1_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 3,
+      "row": 1,
+      "col": 1
+    },
+    {
+      "bookmark": "table_3_row2_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 3,
+      "row": 2,
+      "col": 0
+    },
+    {
+      "bookmark": "table_3_row2_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 3,
+      "row": 2,
+      "col": 1
+    },
+    {
+      "bookmark": "table_3_row3_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 3,
+      "row": 3,
+      "col": 0
+    },
+    {
+      "bookmark": "table_3_row3_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 3,
+      "row": 3,
+      "col": 1
+    },
+    {
+      "bookmark": "table_3_row4_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 3,
+      "row": 4,
+      "col": 0
+    },
+    {
+      "bookmark": "table_3_row4_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 3,
+      "row": 4,
+      "col": 1
+    },
+    {
+      "bookmark": "table_3_row5_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 3,
+      "row": 5,
+      "col": 0
+    },
+    {
+      "bookmark": "table_3_row5_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 3,
+      "row": 5,
+      "col": 1
+    },
+    {
+      "bookmark": "table_4_row1_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 4,
+      "row": 1,
+      "col": 0
+    },
+    {
+      "bookmark": "table_4_row1_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 4,
+      "row": 1,
+      "col": 1
+    },
+    {
+      "bookmark": "table_4_row1_col2",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 4,
+      "row": 1,
+      "col": 2
+    },
+    {
+      "bookmark": "table_4_row2_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 4,
+      "row": 2,
+      "col": 0
+    },
+    {
+      "bookmark": "table_4_row2_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 4,
+      "row": 2,
+      "col": 1
+    },
+    {
+      "bookmark": "table_4_row2_col2",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 4,
+      "row": 2,
+      "col": 2
+    },
+    {
+      "bookmark": "table_4_row3_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 4,
+      "row": 3,
+      "col": 0
+    },
+    {
+      "bookmark": "table_4_row3_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 4,
+      "row": 3,
+      "col": 1
+    },
+    {
+      "bookmark": "table_4_row3_col2",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 4,
+      "row": 3,
+      "col": 2
+    },
+    {
+      "bookmark": "table_4_row4_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 4,
+      "row": 4,
+      "col": 0
+    },
+    {
+      "bookmark": "table_4_row4_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 4,
+      "row": 4,
+      "col": 1
+    },
+    {
+      "bookmark": "table_4_row4_col2",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 4,
+      "row": 4,
+      "col": 2
+    },
+    {
+      "bookmark": "table_4_row5_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 4,
+      "row": 5,
+      "col": 0
+    },
+    {
+      "bookmark": "table_4_row5_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 4,
+      "row": 5,
+      "col": 1
+    },
+    {
+      "bookmark": "table_4_row5_col2",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 4,
+      "row": 5,
+      "col": 2
+    },
+    {
+      "bookmark": "table_4_row6_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 4,
+      "row": 6,
+      "col": 0
+    },
+    {
+      "bookmark": "table_4_row6_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 4,
+      "row": 6,
+      "col": 1
+    },
+    {
+      "bookmark": "table_4_row6_col2",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 4,
+      "row": 6,
+      "col": 2
+    },
+    {
+      "bookmark": "table_5_row1_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 5,
+      "row": 1,
+      "col": 0
+    },
+    {
+      "bookmark": "table_5_row1_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 5,
+      "row": 1,
+      "col": 1
+    },
+    {
+      "bookmark": "table_5_row1_col2",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 5,
+      "row": 1,
+      "col": 2
+    },
+    {
+      "bookmark": "table_5_row1_col3",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 5,
+      "row": 1,
+      "col": 3
+    },
+    {
+      "bookmark": "table_5_row1_col4",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 5,
+      "row": 1,
+      "col": 4
+    },
+    {
+      "bookmark": "table_5_row2_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 5,
+      "row": 2,
+      "col": 0
+    },
+    {
+      "bookmark": "table_5_row2_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 5,
+      "row": 2,
+      "col": 1
+    },
+    {
+      "bookmark": "table_5_row2_col2",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 5,
+      "row": 2,
+      "col": 2
+    },
+    {
+      "bookmark": "table_5_row2_col3",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 5,
+      "row": 2,
+      "col": 3
+    },
+    {
+      "bookmark": "table_5_row2_col4",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 5,
+      "row": 2,
+      "col": 4
+    },
+    {
+      "bookmark": "table_5_row3_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 5,
+      "row": 3,
+      "col": 0
+    },
+    {
+      "bookmark": "table_5_row3_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 5,
+      "row": 3,
+      "col": 1
+    },
+    {
+      "bookmark": "table_5_row3_col2",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 5,
+      "row": 3,
+      "col": 2
+    },
+    {
+      "bookmark": "table_5_row3_col3",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 5,
+      "row": 3,
+      "col": 3
+    },
+    {
+      "bookmark": "table_5_row3_col4",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 5,
+      "row": 3,
+      "col": 4
+    },
+    {
+      "bookmark": "table_5_row4_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 5,
+      "row": 4,
+      "col": 0
+    },
+    {
+      "bookmark": "table_5_row4_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 5,
+      "row": 4,
+      "col": 1
+    },
+    {
+      "bookmark": "table_5_row4_col2",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 5,
+      "row": 4,
+      "col": 2
+    },
+    {
+      "bookmark": "table_5_row4_col3",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 5,
+      "row": 4,
+      "col": 3
+    },
+    {
+      "bookmark": "table_5_row4_col4",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 5,
+      "row": 4,
+      "col": 4
+    },
+    {
+      "bookmark": "table_5_row5_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 5,
+      "row": 5,
+      "col": 0
+    },
+    {
+      "bookmark": "table_5_row5_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 5,
+      "row": 5,
+      "col": 1
+    },
+    {
+      "bookmark": "table_5_row5_col2",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 5,
+      "row": 5,
+      "col": 2
+    },
+    {
+      "bookmark": "table_5_row5_col3",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 5,
+      "row": 5,
+      "col": 3
+    },
+    {
+      "bookmark": "table_5_row5_col4",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 5,
+      "row": 5,
+      "col": 4
+    },
+    {
+      "bookmark": "table_6_row1_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 6,
+      "row": 1,
+      "col": 1
+    },
+    {
+      "bookmark": "table_6_row2_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 6,
+      "row": 2,
+      "col": 1
+    },
+    {
+      "bookmark": "table_6_row3_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 6,
+      "row": 3,
+      "col": 1
+    },
+    {
+      "bookmark": "table_6_row4_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 6,
+      "row": 4,
+      "col": 1
+    },
+    {
+      "bookmark": "table_6_row5_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 6,
+      "row": 5,
+      "col": 1
+    },
+    {
+      "bookmark": "table_6_row6_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 6,
+      "row": 6,
+      "col": 0
+    },
+    {
+      "bookmark": "table_6_row6_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 6,
+      "row": 6,
+      "col": 1
+    },
+    {
+      "bookmark": "table_7_row1_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 7,
+      "row": 1,
+      "col": 0
+    },
+    {
+      "bookmark": "table_7_row1_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 7,
+      "row": 1,
+      "col": 1
+    },
+    {
+      "bookmark": "table_7_row1_col2",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 7,
+      "row": 1,
+      "col": 2
+    },
+    {
+      "bookmark": "table_7_row1_col3",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 7,
+      "row": 1,
+      "col": 3
+    },
+    {
+      "bookmark": "table_7_row1_col4",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 7,
+      "row": 1,
+      "col": 4
+    },
+    {
+      "bookmark": "table_7_row2_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 7,
+      "row": 2,
+      "col": 0
+    },
+    {
+      "bookmark": "table_7_row2_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 7,
+      "row": 2,
+      "col": 1
+    },
+    {
+      "bookmark": "table_7_row2_col2",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 7,
+      "row": 2,
+      "col": 2
+    },
+    {
+      "bookmark": "table_7_row2_col3",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 7,
+      "row": 2,
+      "col": 3
+    },
+    {
+      "bookmark": "table_7_row2_col4",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 7,
+      "row": 2,
+      "col": 4
+    },
+    {
+      "bookmark": "table_8_row1_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 8,
+      "row": 1,
+      "col": 0
+    },
+    {
+      "bookmark": "table_8_row1_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 8,
+      "row": 1,
+      "col": 1
+    },
+    {
+      "bookmark": "table_8_row1_col2",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 8,
+      "row": 1,
+      "col": 2
+    },
+    {
+      "bookmark": "table_8_row1_col3",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 8,
+      "row": 1,
+      "col": 3
+    },
+    {
+      "bookmark": "table_8_row1_col4",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 8,
+      "row": 1,
+      "col": 4
+    },
+    {
+      "bookmark": "table_8_row2_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 8,
+      "row": 2,
+      "col": 0
+    },
+    {
+      "bookmark": "table_8_row2_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 8,
+      "row": 2,
+      "col": 1
+    },
+    {
+      "bookmark": "table_8_row2_col2",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 8,
+      "row": 2,
+      "col": 2
+    },
+    {
+      "bookmark": "table_8_row2_col3",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 8,
+      "row": 2,
+      "col": 3
+    },
+    {
+      "bookmark": "table_8_row2_col4",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 8,
+      "row": 2,
+      "col": 4
+    },
+    {
+      "bookmark": "table_8_row3_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 8,
+      "row": 3,
+      "col": 0
+    },
+    {
+      "bookmark": "table_8_row3_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 8,
+      "row": 3,
+      "col": 1
+    },
+    {
+      "bookmark": "table_8_row3_col2",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 8,
+      "row": 3,
+      "col": 2
+    },
+    {
+      "bookmark": "table_8_row3_col3",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 8,
+      "row": 3,
+      "col": 3
+    },
+    {
+      "bookmark": "table_8_row3_col4",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 8,
+      "row": 3,
+      "col": 4
+    },
+    {
+      "bookmark": "table_9_row1_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 9,
+      "row": 1,
+      "col": 0
+    },
+    {
+      "bookmark": "table_9_row1_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 9,
+      "row": 1,
+      "col": 1
+    },
+    {
+      "bookmark": "table_9_row1_col2",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 9,
+      "row": 1,
+      "col": 2
+    },
+    {
+      "bookmark": "table_9_row1_col3",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 9,
+      "row": 1,
+      "col": 3
+    },
+    {
+      "bookmark": "table_9_row1_col4",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 9,
+      "row": 1,
+      "col": 4
+    },
+    {
+      "bookmark": "table_9_row2_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 9,
+      "row": 2,
+      "col": 0
+    },
+    {
+      "bookmark": "table_9_row2_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 9,
+      "row": 2,
+      "col": 1
+    },
+    {
+      "bookmark": "table_9_row2_col2",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 9,
+      "row": 2,
+      "col": 2
+    },
+    {
+      "bookmark": "table_9_row2_col3",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 9,
+      "row": 2,
+      "col": 3
+    },
+    {
+      "bookmark": "table_9_row2_col4",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 9,
+      "row": 2,
+      "col": 4
+    },
+    {
+      "bookmark": "table_9_row3_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 9,
+      "row": 3,
+      "col": 0
+    },
+    {
+      "bookmark": "table_9_row3_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 9,
+      "row": 3,
+      "col": 1
+    },
+    {
+      "bookmark": "table_9_row3_col2",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 9,
+      "row": 3,
+      "col": 2
+    },
+    {
+      "bookmark": "table_9_row3_col3",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 9,
+      "row": 3,
+      "col": 3
+    },
+    {
+      "bookmark": "table_9_row3_col4",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 9,
+      "row": 3,
+      "col": 4
+    },
+    {
+      "bookmark": "table_10_row1_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 10,
+      "row": 1,
+      "col": 0
+    },
+    {
+      "bookmark": "table_10_row1_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 10,
+      "row": 1,
+      "col": 1
+    },
+    {
+      "bookmark": "table_10_row1_col2",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 10,
+      "row": 1,
+      "col": 2
+    },
+    {
+      "bookmark": "table_10_row1_col3",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 10,
+      "row": 1,
+      "col": 3
+    },
+    {
+      "bookmark": "table_10_row1_col4",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 10,
+      "row": 1,
+      "col": 4
+    },
+    {
+      "bookmark": "table_10_row2_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 10,
+      "row": 2,
+      "col": 0
+    },
+    {
+      "bookmark": "table_10_row2_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 10,
+      "row": 2,
+      "col": 1
+    },
+    {
+      "bookmark": "table_10_row2_col2",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 10,
+      "row": 2,
+      "col": 2
+    },
+    {
+      "bookmark": "table_10_row2_col3",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 10,
+      "row": 2,
+      "col": 3
+    },
+    {
+      "bookmark": "table_10_row2_col4",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 10,
+      "row": 2,
+      "col": 4
+    },
+    {
+      "bookmark": "table_10_row3_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 10,
+      "row": 3,
+      "col": 0
+    },
+    {
+      "bookmark": "table_10_row3_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 10,
+      "row": 3,
+      "col": 1
+    },
+    {
+      "bookmark": "table_10_row3_col2",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 10,
+      "row": 3,
+      "col": 2
+    },
+    {
+      "bookmark": "table_10_row3_col3",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 10,
+      "row": 3,
+      "col": 3
+    },
+    {
+      "bookmark": "table_10_row3_col4",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 10,
+      "row": 3,
+      "col": 4
+    },
+    {
+      "bookmark": "table_11_row1_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 11,
+      "row": 1,
+      "col": 0
+    },
+    {
+      "bookmark": "table_11_row1_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 11,
+      "row": 1,
+      "col": 1
+    },
+    {
+      "bookmark": "table_11_row1_col2",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 11,
+      "row": 1,
+      "col": 2
+    },
+    {
+      "bookmark": "table_11_row1_col3",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 11,
+      "row": 1,
+      "col": 3
+    },
+    {
+      "bookmark": "table_11_row1_col4",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 11,
+      "row": 1,
+      "col": 4
+    },
+    {
+      "bookmark": "table_11_row2_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 11,
+      "row": 2,
+      "col": 0
+    },
+    {
+      "bookmark": "table_11_row2_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 11,
+      "row": 2,
+      "col": 1
+    },
+    {
+      "bookmark": "table_11_row2_col2",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 11,
+      "row": 2,
+      "col": 2
+    },
+    {
+      "bookmark": "table_11_row2_col3",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 11,
+      "row": 2,
+      "col": 3
+    },
+    {
+      "bookmark": "table_11_row2_col4",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 11,
+      "row": 2,
+      "col": 4
+    },
+    {
+      "bookmark": "table_11_row3_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 11,
+      "row": 3,
+      "col": 0
+    },
+    {
+      "bookmark": "table_11_row3_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 11,
+      "row": 3,
+      "col": 1
+    },
+    {
+      "bookmark": "table_11_row3_col2",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 11,
+      "row": 3,
+      "col": 2
+    },
+    {
+      "bookmark": "table_11_row3_col3",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 11,
+      "row": 3,
+      "col": 3
+    },
+    {
+      "bookmark": "table_11_row3_col4",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 11,
+      "row": 3,
+      "col": 4
+    },
+    {
+      "bookmark": "table_12_row2_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 12,
+      "row": 2,
+      "col": 0
+    },
+    {
+      "bookmark": "table_12_row2_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 12,
+      "row": 2,
+      "col": 1
+    },
+    {
+      "bookmark": "table_12_row2_col2",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 12,
+      "row": 2,
+      "col": 2
+    },
+    {
+      "bookmark": "table_12_row2_col3",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 12,
+      "row": 2,
+      "col": 3
+    },
+    {
+      "bookmark": "table_12_row2_col4",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 12,
+      "row": 2,
+      "col": 4
+    },
+    {
+      "bookmark": "table_12_row2_col5",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 12,
+      "row": 2,
+      "col": 5
+    },
+    {
+      "bookmark": "table_12_row2_col6",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 12,
+      "row": 2,
+      "col": 6
+    },
+    {
+      "bookmark": "table_12_row3_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 12,
+      "row": 3,
+      "col": 0
+    },
+    {
+      "bookmark": "table_12_row3_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 12,
+      "row": 3,
+      "col": 1
+    },
+    {
+      "bookmark": "table_12_row3_col2",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 12,
+      "row": 3,
+      "col": 2
+    },
+    {
+      "bookmark": "table_12_row3_col3",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 12,
+      "row": 3,
+      "col": 3
+    },
+    {
+      "bookmark": "table_12_row3_col4",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 12,
+      "row": 3,
+      "col": 4
+    },
+    {
+      "bookmark": "table_12_row3_col5",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 12,
+      "row": 3,
+      "col": 5
+    },
+    {
+      "bookmark": "table_12_row3_col6",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 12,
+      "row": 3,
+      "col": 6
+    },
+    {
+      "bookmark": "table_12_row4_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 12,
+      "row": 4,
+      "col": 0
+    },
+    {
+      "bookmark": "table_12_row4_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 12,
+      "row": 4,
+      "col": 1
+    },
+    {
+      "bookmark": "table_12_row4_col2",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 12,
+      "row": 4,
+      "col": 2
+    },
+    {
+      "bookmark": "table_12_row4_col3",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 12,
+      "row": 4,
+      "col": 3
+    },
+    {
+      "bookmark": "table_12_row4_col4",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 12,
+      "row": 4,
+      "col": 4
+    },
+    {
+      "bookmark": "table_12_row4_col5",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 12,
+      "row": 4,
+      "col": 5
+    },
+    {
+      "bookmark": "table_12_row4_col6",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 12,
+      "row": 4,
+      "col": 6
+    },
+    {
+      "bookmark": "table_12_row5_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 12,
+      "row": 5,
+      "col": 0
+    },
+    {
+      "bookmark": "table_12_row5_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 12,
+      "row": 5,
+      "col": 1
+    },
+    {
+      "bookmark": "table_12_row5_col2",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 12,
+      "row": 5,
+      "col": 2
+    },
+    {
+      "bookmark": "table_12_row5_col3",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 12,
+      "row": 5,
+      "col": 3
+    },
+    {
+      "bookmark": "table_12_row5_col4",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 12,
+      "row": 5,
+      "col": 4
+    },
+    {
+      "bookmark": "table_12_row5_col5",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 12,
+      "row": 5,
+      "col": 5
+    },
+    {
+      "bookmark": "table_12_row5_col6",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 12,
+      "row": 5,
+      "col": 6
+    },
+    {
+      "bookmark": "table_12_row6_col0",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 12,
+      "row": 6,
+      "col": 0
+    },
+    {
+      "bookmark": "table_12_row6_col1",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 12,
+      "row": 6,
+      "col": 1
+    },
+    {
+      "bookmark": "table_12_row6_col2",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 12,
+      "row": 6,
+      "col": 2
+    },
+    {
+      "bookmark": "table_12_row6_col3",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 12,
+      "row": 6,
+      "col": 3
+    },
+    {
+      "bookmark": "table_12_row6_col4",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 12,
+      "row": 6,
+      "col": 4
+    },
+    {
+      "bookmark": "table_12_row6_col5",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 12,
+      "row": 6,
+      "col": 5
+    },
+    {
+      "bookmark": "table_12_row6_col6",
+      "type": "table_cell",
+      "prompt": "",
+      "table": 12,
+      "row": 6,
+      "col": 6
+    },
+    {
+      "bookmark": "qa_section1_q001_answer",
+      "type": "qa",
+      "prompt": "基金管理人的公司情况、历史沿革、获取的资产管理资质或牌照等相关情况，公司获得的主要奖项。",
+      "section": 1,
+      "insertion_mode": "append_after_question"
+    },
+    {
+      "bookmark": "image_org_structure",
+      "type": "image",
+      "prompt": "管理人公司组织结构图",
+      "section": 1,
+      "insertion_mode": "bookmark_image"
+    },
+    {
+      "bookmark": "qa_section1_q003_answer",
+      "type": "qa",
+      "prompt": "管理人各部门员工数量及主要职能",
+      "section": 1,
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "qa_section1_q004_answer",
+      "type": "qa",
+      "prompt": "投研部门人员配置计划",
+      "section": 1,
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "qa_section1_q005_answer",
+      "type": "qa",
+      "prompt": "管理人股东名称及持股比例",
+      "section": 1,
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "qa_section1_q006_answer",
+      "type": "qa",
+      "prompt": "公司成立以来股权变更情况",
+      "section": 1,
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "qa_section1_q007_answer",
+      "type": "qa",
+      "prompt": "现有股权结构中，核心投研团队持股比例及员工持股计划情况",
+      "section": 1,
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "qa_section1_q008_answer",
+      "type": "qa",
+      "prompt": "管理人控股股东、实际控制人及法人基本情况；管理人子公司情况：持股5%以上的金融企业、上市公司及持股20%以上的其他企业、分支机构和其他关联方（受同一控股股东/实际控制人控制的金融企业、资产管理机构或相关服务机构）",
+      "section": 1,
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "qa_section1_q009_answer",
+      "type": "qa",
+      "prompt": "管理人自成立以来（或近3年）各年度的员工总数，以及关键人员的增减情况",
+      "section": 1,
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "qa_section1_q010_answer",
+      "type": "qa",
+      "prompt": "补充说明（如有）",
+      "section": 1,
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "qa_section1_q011_answer",
+      "type": "qa",
+      "prompt": "管理人关键岗位人员及投研团队成员（例如投资总监、投资经理、研究总监、量化总监、风控总监、市场总监等，以各公司的实际情况为准）的主要职业履历，包括历史管理规模等。",
+      "section": 1,
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "qa_section1_q012_answer",
+      "type": "qa",
+      "prompt": "补充说明（如有）",
+      "section": 1,
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "qa_section1_q013_answer",
+      "type": "qa",
+      "prompt": "管理人制度体系建设情况。",
+      "section": 1,
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "qa_section1_q014_answer",
+      "type": "qa",
+      "prompt": "管理人员工或核心人员激励机制情况。",
+      "section": 1,
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "qa_section1_q015_answer",
+      "type": "qa",
+      "prompt": "管理人自主研发或所使用的标准化IT产品，IT系统服务器的托管方式（是托管在自有机房还是托管机房）等，最近两年用于IT系统的投入总额。",
+      "section": 1,
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "qa_section1_q016_answer",
+      "type": "qa",
+      "prompt": "管理人自建及采购的主要源数据",
+      "section": 1,
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "qa_section1_q017_answer",
+      "type": "qa",
+      "prompt": "生产系统的备份方式，包括敏感数据和关键系统的保存与灾备机制",
+      "section": 1,
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "qa_section1_q018_answer",
+      "type": "qa",
+      "prompt": "系统/网络/运作/电源发生故障时，管理人的应急措施",
+      "section": 1,
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "qa_section2_q019_answer",
+      "type": "qa",
+      "prompt": "拟入池产品投资策略的基本思想、实现方法、适合的市场特点以及各类子策略在产品中的总体比例等",
+      "section": 2,
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "qa_section2_q020_answer",
+      "type": "qa",
+      "prompt": "请简述公司的投资决策流程，决策委员会的人员构成情况",
+      "section": 2,
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "qa_section2_q021_answer",
+      "type": "qa",
+      "prompt": "上述投资决策流程是如何实现投后监控以保证投资策略的执行，避免偏离及失控？",
+      "section": 2,
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "qa_section2_q022_answer",
+      "type": "qa",
+      "prompt": "复合策略的子策略类型及相应权重调整方式（适用于复合策略）",
+      "section": 2,
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "qa_section2_q023_answer",
+      "type": "qa",
+      "prompt": "管理人同策略代表性产品是否在第三方代销平台（如私募排排网等）披露？请附链接。",
+      "section": 2,
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "qa_section2_q024_answer",
+      "type": "qa",
+      "prompt": "选股的逻辑是什么？股票买卖的择时如何决策？",
+      "section": 2,
+      "insertion_mode": "append_after_question"
+    },
+    {
+      "bookmark": "qa_section2_q025_answer",
+      "type": "qa",
+      "prompt": "该投资逻辑最适宜市场环境及原因？目前最看好的行业和板块是什么？对应的逻辑？",
+      "section": 2,
+      "insertion_mode": "append_after_question"
+    },
+    {
+      "bookmark": "qa_section2_q026_answer",
+      "type": "qa",
+      "prompt": "该投资逻辑最不适应的市场环境及主要风险点？",
+      "section": 2,
+      "insertion_mode": "append_after_question"
+    },
+    {
+      "bookmark": "qa_section2_q027_answer",
+      "type": "qa",
+      "prompt": "是否建立重点股票池？如有，股票池中备选股票的数量，题材构成？入池审核的权限归属？",
+      "section": 2,
+      "insertion_mode": "append_after_question"
+    },
+    {
+      "bookmark": "qa_section2_q028_answer",
+      "type": "qa",
+      "prompt": "持仓中是否包括北交所、创业板及微盘股？如有，其投资比例是否有限制？",
+      "section": 2,
+      "insertion_mode": "append_after_question"
+    },
+    {
+      "bookmark": "qa_section2_q029_answer",
+      "type": "qa",
+      "prompt": "投资经理是否有权投资公司股票池以外的标的？",
+      "section": 2,
+      "insertion_mode": "append_after_question"
+    },
+    {
+      "bookmark": "qa_section2_q030_answer",
+      "type": "qa",
+      "prompt": "拟入池策略的仓位管理思路、平均持股数量、个股集中度上限、行业集中度。",
+      "section": 2,
+      "insertion_mode": "append_after_question"
+    },
+    {
+      "bookmark": "qa_section2_q031_answer",
+      "type": "qa",
+      "prompt": "当前该策略的仓位比例是多少？",
+      "section": 2,
+      "insertion_mode": "append_after_question"
+    },
+    {
+      "bookmark": "qa_section2_q032_answer",
+      "type": "qa",
+      "prompt": "平均持仓时间或者双边年化换手率。",
+      "section": 2,
+      "insertion_mode": "append_after_question"
+    },
+    {
+      "bookmark": "qa_section2_q033_answer",
+      "type": "qa",
+      "prompt": "是否对拟投上市公司进行实地调研？平均每年参与的调研次数？",
+      "section": 2,
+      "insertion_mode": "append_after_question"
+    },
+    {
+      "bookmark": "qa_section2_q034_answer",
+      "type": "qa",
+      "prompt": "是否对冲？如对冲，使用何种对冲工具（融券还是股指期货等），如何确定对冲比例和对冲时机？",
+      "section": 2,
+      "insertion_mode": "append_after_question"
+    },
+    {
+      "bookmark": "qa_section2_q035_answer",
+      "type": "qa",
+      "prompt": "简要阐述管理人对未来市场走势的判断，区分短期、中期、长期。",
+      "section": 2,
+      "insertion_mode": "append_after_question"
+    },
+    {
+      "bookmark": "qa_section2_q036_answer",
+      "type": "qa",
+      "prompt": "该投资策略的市场容量是否有限制？如有，请指明最为适合的容量是多大",
+      "section": 2,
+      "insertion_mode": "append_after_question"
+    },
+    {
+      "bookmark": "qa_section2_q037_answer",
+      "type": "qa",
+      "prompt": "相比市场上同等策略，管理人的主要优势在哪里？",
+      "section": 2,
+      "insertion_mode": "append_after_question"
+    },
+    {
+      "bookmark": "qa_section2_q038_answer",
+      "type": "qa",
+      "prompt": "该策略历史最大回辙发生的时间及原因分析？",
+      "section": 2,
+      "insertion_mode": "append_after_question"
+    },
+    {
+      "bookmark": "qa_section2_q039_answer",
+      "type": "qa",
+      "prompt": "日常交易的执行方案，是否指定特定时间段完成交易？",
+      "section": 2,
+      "insertion_mode": "append_after_question"
+    },
+    {
+      "bookmark": "qa_section2_q040_answer",
+      "type": "qa",
+      "prompt": "研究团队的管理与培养模式",
+      "section": 2,
+      "insertion_mode": "append_after_question"
+    },
+    {
+      "bookmark": "qa_section2_q041_answer",
+      "type": "qa",
+      "prompt": "同策略产品的持仓是否存在差异",
+      "section": 2,
+      "insertion_mode": "append_after_question"
+    },
+    {
+      "bookmark": "strat_quant_methodology",
+      "type": "qa",
+      "prompt": "简述管理人所采用的量化投资策略，请指出主要采用的量化选股方法论",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "quant",
+      "applicable_key": "strat_quant_applicable"
+    },
+    {
+      "bookmark": "strat_quant_stock_pool",
+      "type": "qa",
+      "prompt": "备选股票池如何构成？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "quant",
+      "applicable_key": "strat_quant_applicable"
+    },
+    {
+      "bookmark": "strat_quant_style_industry_exposure",
+      "type": "qa",
+      "prompt": "股票端组合的风格与行业敞口的约束条件是什么？如何监控？敞口检查及调整的频率？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "quant",
+      "applicable_key": "strat_quant_applicable"
+    },
+    {
+      "bookmark": "strat_quant_holding_constraints",
+      "type": "qa",
+      "prompt": "持股数量、平均持股周期及换手率，单票持有上限，是否设置单票止损机制",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "quant",
+      "applicable_key": "strat_quant_applicable"
+    },
+    {
+      "bookmark": "strat_quant_benchmark_index",
+      "type": "qa",
+      "prompt": "拟入池产品选择的基准指数是哪个？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "quant",
+      "applicable_key": "strat_quant_applicable"
+    },
+    {
+      "bookmark": "strat_quant_team_structure",
+      "type": "qa",
+      "prompt": "量化投研团队的分组及各组的人员配备数量",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "quant",
+      "applicable_key": "strat_quant_applicable"
+    },
+    {
+      "bookmark": "strat_quant_factor_sources",
+      "type": "qa",
+      "prompt": "底层因子获得方式、已入池总数",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "quant",
+      "applicable_key": "strat_quant_applicable"
+    },
+    {
+      "bookmark": "strat_quant_factor_mix",
+      "type": "qa",
+      "prompt": "实盘运用的因子数量、分类及对应比重。是否对不同因子间的相关度有要求？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "quant",
+      "applicable_key": "strat_quant_applicable"
+    },
+    {
+      "bookmark": "strat_quant_factor_substrategy",
+      "type": "qa",
+      "prompt": "因子是否以组合形成子策略的方式生效？实盘中的子策略数量？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "quant",
+      "applicable_key": "strat_quant_applicable"
+    },
+    {
+      "bookmark": "strat_quant_factor_entry",
+      "type": "qa",
+      "prompt": "单因子入池的基本要求是什么？因子的历史稳定性有何要求？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "quant",
+      "applicable_key": "strat_quant_applicable"
+    },
+    {
+      "bookmark": "strat_quant_risk_profit_factor",
+      "type": "qa",
+      "prompt": "管理人如何区分风险因子与盈利因子？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "quant",
+      "applicable_key": "strat_quant_applicable"
+    },
+    {
+      "bookmark": "strat_quant_machine_learning",
+      "type": "qa",
+      "prompt": "是否采用机器学习及深度学习的技术？如有，请阐述该技术在管理人因子挖掘及组合构建中的应用情况？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "quant",
+      "applicable_key": "strat_quant_applicable"
+    },
+    {
+      "bookmark": "strat_quant_ml_features_compute",
+      "type": "qa",
+      "prompt": "（选答）管理人所采用的机器学习策略中的原始特征数量？主要采用何种方法进行降维？所采用的主要基学习器（Base Learner）是什么？管理人是否有充分的算力资源？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "quant",
+      "applicable_key": "strat_quant_applicable"
+    },
+    {
+      "bookmark": "strat_quant_ml_explainability",
+      "type": "qa",
+      "prompt": "（选答）采用何种方法提高管理人对深度学习技术应用的解释能力？如何降低与同类机器学习策略的相关度？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "quant",
+      "applicable_key": "strat_quant_applicable"
+    },
+    {
+      "bookmark": "strat_quant_capacity",
+      "type": "qa",
+      "prompt": "拟入池策略的市场容量是否有限制？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "quant",
+      "applicable_key": "strat_quant_applicable"
+    },
+    {
+      "bookmark": "strat_quant_max_drawdown",
+      "type": "qa",
+      "prompt": "该策略净值及超额历史最大回辙发生的时间及原因分析？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "quant",
+      "applicable_key": "strat_quant_applicable"
+    },
+    {
+      "bookmark": "strat_quant_research_trading_system",
+      "type": "qa",
+      "prompt": "投研团队使用的系统是什么，交易系统是否自主开发，采用何种算法交易模块？与券商外接优先选择的方式是什么？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "quant",
+      "applicable_key": "strat_quant_applicable"
+    },
+    {
+      "bookmark": "strat_quant_enhanced_neutral_consistency",
+      "type": "qa",
+      "prompt": "公司的指数增强策略与市场中性策略股票底仓的一致性如何？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "quant",
+      "applicable_key": "strat_quant_applicable"
+    },
+    {
+      "bookmark": "strat_quant_neutral_hedging",
+      "type": "qa",
+      "prompt": "市场中性策略使用何种对冲工具？市值敞口？多长周期进行一次敞口的监控及调整？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "quant",
+      "applicable_key": "strat_quant_applicable"
+    },
+    {
+      "bookmark": "strat_quant_neutral_dynamic_position",
+      "type": "qa",
+      "prompt": "市场中性策略的仓位是否动态可调整？调整的依据是什么？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "quant",
+      "applicable_key": "strat_quant_applicable"
+    },
+    {
+      "bookmark": "strat_quant_basis_risk",
+      "type": "qa",
+      "prompt": "采用何种方法应对基差的波动？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "quant",
+      "applicable_key": "strat_quant_applicable"
+    },
+    {
+      "bookmark": "strat_quant_competitive_advantage",
+      "type": "qa",
+      "prompt": "相比市场上同等策略，管理人的主要优势在哪里？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "quant",
+      "applicable_key": "strat_quant_applicable"
+    },
+    {
+      "bookmark": "strat_cta_strategy_type_mechanism",
+      "type": "qa",
+      "prompt": "策略所属类型（基本面量化、趋势策略、截面策略、产业链套利、统计套利、跨市场套利等），请阐述本次入池产品所采用策略的盈利机制与特点。",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "cta",
+      "applicable_key": "strat_cta_applicable"
+    },
+    {
+      "bookmark": "strat_cta_position_management",
+      "type": "qa",
+      "prompt": "仓位管理（如单一标的持仓上限、轧差、各大类仓位持仓、风险回撤时的仓位管理、节假日前后的仓位管理等），最高保证金占用比例？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "cta",
+      "applicable_key": "strat_cta_applicable"
+    },
+    {
+      "bookmark": "strat_cta_intraday_leverage",
+      "type": "qa",
+      "prompt": "日内杠杆大小（该类策略日内合约价值总值的峰值占资产净值比例）",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "cta",
+      "applicable_key": "strat_cta_applicable"
+    },
+    {
+      "bookmark": "strat_cta_overnight_leverage",
+      "type": "qa",
+      "prompt": "隔夜杠杆大小（该类策略隔夜持仓的合约价值总值占资产净值比例）",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "cta",
+      "applicable_key": "strat_cta_applicable"
+    },
+    {
+      "bookmark": "strat_cta_futures_allocation",
+      "type": "qa",
+      "prompt": "金融期货与商品期货持仓的比例，平均持仓的期货品种总数，交易标的选入的标准是什么？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "cta",
+      "applicable_key": "strat_cta_applicable"
+    },
+    {
+      "bookmark": "strat_cta_margin_usage",
+      "type": "qa",
+      "prompt": "平均保证金（该类策略占用保证金占资产净值）占用比例、最高占用比例",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "cta",
+      "applicable_key": "strat_cta_applicable"
+    },
+    {
+      "bookmark": "strat_cta_trading_frequency",
+      "type": "qa",
+      "prompt": "交易频率或平均持仓周期？以保证金计算高中低频策略分别的占比以及对收益的贡献度？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "cta",
+      "applicable_key": "strat_cta_applicable"
+    },
+    {
+      "bookmark": "strat_cta_trading_system",
+      "type": "qa",
+      "prompt": "交易系统是否自己开发？使用的开发语言是什么？对交易速度的要求，是否需要进行主机托管？是否采用行情加速？对接的柜台系统是否指定？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "cta",
+      "applicable_key": "strat_cta_applicable"
+    },
+    {
+      "bookmark": "strat_cta_trend_signal",
+      "type": "qa",
+      "prompt": "简述趋势策略的信号产生机制？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "cta",
+      "applicable_key": "strat_cta_applicable"
+    },
+    {
+      "bookmark": "strat_cta_position_sizing",
+      "type": "qa",
+      "prompt": "交易信号触发时如何确定各个品种需要交易的头寸？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "cta",
+      "applicable_key": "strat_cta_applicable"
+    },
+    {
+      "bookmark": "strat_cta_research_platform_data",
+      "type": "qa",
+      "prompt": "策略研究员使用的研究平台是什么？使用了哪些数据源？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "cta",
+      "applicable_key": "strat_cta_applicable"
+    },
+    {
+      "bookmark": "strat_cta_factor_inventory",
+      "type": "qa",
+      "prompt": "期货策略的因子数量与分类？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "cta",
+      "applicable_key": "strat_cta_applicable"
+    },
+    {
+      "bookmark": "strat_cta_factor_entry",
+      "type": "qa",
+      "prompt": "因子入池的基本要求是什么？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "cta",
+      "applicable_key": "strat_cta_applicable"
+    },
+    {
+      "bookmark": "strat_cta_factor_universality",
+      "type": "qa",
+      "prompt": "是否要求因子或因子构成的子策略必须具备多品种的普适性？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "cta",
+      "applicable_key": "strat_cta_applicable"
+    },
+    {
+      "bookmark": "strat_cta_take_profit",
+      "type": "qa",
+      "prompt": "策略是否设置主动止盈条件？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "cta",
+      "applicable_key": "strat_cta_applicable"
+    },
+    {
+      "bookmark": "strat_cta_arbitrage_portfolio",
+      "type": "qa",
+      "prompt": "（选填）期货套利策略的品种组合如何选择，同一套组合内各品种的相关度是否有要求，单一组合的资金使用比例如何确定，套利组合指令的成交顺序？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "cta",
+      "applicable_key": "strat_cta_applicable"
+    },
+    {
+      "bookmark": "strat_cta_cross_section_portfolio",
+      "type": "qa",
+      "prompt": "（选填）截面策略多空组合构建方式，风险敞口的约束机制。",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "cta",
+      "applicable_key": "strat_cta_applicable"
+    },
+    {
+      "bookmark": "strat_cta_adverse_market_drawdown",
+      "type": "qa",
+      "prompt": "请说明不利于该类策略的市场环境是什么，历史上本策略的最大回撤及发生的原因。",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "cta",
+      "applicable_key": "strat_cta_applicable"
+    },
+    {
+      "bookmark": "strat_cta_risk_mitigation",
+      "type": "qa",
+      "prompt": "策略的主要风险点，以及针对这些风险点的应对措施",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "cta",
+      "applicable_key": "strat_cta_applicable"
+    },
+    {
+      "bookmark": "strat_cta_capacity",
+      "type": "qa",
+      "prompt": "预估策略的市场容量",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "cta",
+      "applicable_key": "strat_cta_applicable"
+    },
+    {
+      "bookmark": "strat_cta_competitive_advantage",
+      "type": "qa",
+      "prompt": "相比市场上同等策略，主要优势在哪里？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "cta",
+      "applicable_key": "strat_cta_applicable"
+    },
+    {
+      "bookmark": "strat_cta_future_research",
+      "type": "qa",
+      "prompt": "从投资技术的储备来看，公司对未来期货量化策略的持续研究方向是什么？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "cta",
+      "applicable_key": "strat_cta_applicable"
+    },
+    {
+      "bookmark": "strat_bond_investment_scope",
+      "type": "qa",
+      "prompt": "债券投资范围（国债、公司债、中小企业私募债等）",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "bond",
+      "applicable_key": "strat_bond_applicable"
+    },
+    {
+      "bookmark": "strat_bond_allocation_rating_concentration",
+      "type": "qa",
+      "prompt": "各类债券投资比例、最低投资评级，仓位最重的五个债券的总比例",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "bond",
+      "applicable_key": "strat_bond_applicable"
+    },
+    {
+      "bookmark": "strat_bond_leverage",
+      "type": "qa",
+      "prompt": "杠杆平均水平、最高水平",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "bond",
+      "applicable_key": "strat_bond_applicable"
+    },
+    {
+      "bookmark": "strat_bond_issuer_region_rating",
+      "type": "qa",
+      "prompt": "所投资的债券资产对应债券发行人类型及所在区域？主体评级的要求？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "bond",
+      "applicable_key": "strat_bond_applicable"
+    },
+    {
+      "bookmark": "strat_bond_industry_price_duration_limits",
+      "type": "qa",
+      "prompt": "所投资的债券资产是否在行业集中度、价格偏离度方面进行限制？债券的平均久期是多少？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "bond",
+      "applicable_key": "strat_bond_applicable"
+    },
+    {
+      "bookmark": "strat_bond_blacklist",
+      "type": "qa",
+      "prompt": "目前黑名单的主要构成，如何避雷？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "bond",
+      "applicable_key": "strat_bond_applicable"
+    },
+    {
+      "bookmark": "strat_bond_credit_downshift",
+      "type": "qa",
+      "prompt": "在信用下沉方面的主要思路？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "bond",
+      "applicable_key": "strat_bond_applicable"
+    },
+    {
+      "bookmark": "strat_bond_turnover_trading_system",
+      "type": "qa",
+      "prompt": "交易频率（该类策略年化双向换手率；如需进行日内高频交易，请注明对订单接入速度的要求）如何？交易系统是否自己编制？目前的系统是否可以满足需求，是否有提升空间？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "bond",
+      "applicable_key": "strat_bond_applicable"
+    },
+    {
+      "bookmark": "strat_bond_repo_counterparties",
+      "type": "qa",
+      "prompt": "是否参与协回，协回的主要五家对手方？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "bond",
+      "applicable_key": "strat_bond_applicable"
+    },
+    {
+      "bookmark": "strat_bond_equity_exposure",
+      "type": "qa",
+      "prompt": "产品的权益类敞口比例及投资思路？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "bond",
+      "applicable_key": "strat_bond_applicable"
+    },
+    {
+      "bookmark": "strat_bond_local_government_bonds",
+      "type": "qa",
+      "prompt": "当前城投债的选择与配置思路",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "bond",
+      "applicable_key": "strat_bond_applicable"
+    },
+    {
+      "bookmark": "strat_bond_property_bonds",
+      "type": "qa",
+      "prompt": "当前地产债的选择与配置思路",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "bond",
+      "applicable_key": "strat_bond_applicable"
+    },
+    {
+      "bookmark": "strat_bond_performance_attribution",
+      "type": "qa",
+      "prompt": "业绩归因（包括但不限于票息、资本利得、转债、打新及其他增强收益的构成等）",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "bond",
+      "applicable_key": "strat_bond_applicable"
+    },
+    {
+      "bookmark": "strat_bond_max_drawdown",
+      "type": "qa",
+      "prompt": "历史最大回辙发生的时间及原因",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "bond",
+      "applicable_key": "strat_bond_applicable"
+    },
+    {
+      "bookmark": "strat_bond_market_outlook",
+      "type": "qa",
+      "prompt": "管理人对未来市场走势的判断，短期、中期、长期。",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "bond",
+      "applicable_key": "strat_bond_applicable"
+    },
+    {
+      "bookmark": "strat_bond_competitive_advantage",
+      "type": "qa",
+      "prompt": "相比市场上同等策略，管理人的主要优势在哪里？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "bond",
+      "applicable_key": "strat_bond_applicable"
+    },
+    {
+      "bookmark": "strat_option_strategy_logic_weights",
+      "type": "qa",
+      "prompt": "简述采用的关键策略逻辑，主要子策略及其分配权重",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "option",
+      "applicable_key": "strat_option_applicable"
+    },
+    {
+      "bookmark": "strat_option_underlying_capital_allocation",
+      "type": "qa",
+      "prompt": "交易标的选择和资金分配方案（交易市场、金融或者商品期权，各自比例多少）",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "option",
+      "applicable_key": "strat_option_applicable"
+    },
+    {
+      "bookmark": "strat_option_short_option_ratio",
+      "type": "qa",
+      "prompt": "以卖权为主的策略占比？是否以近期合约为主？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "option",
+      "applicable_key": "strat_option_applicable"
+    },
+    {
+      "bookmark": "strat_option_volatility_forecast",
+      "type": "qa",
+      "prompt": "期权策略采用的预测波动率的方法",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "option",
+      "applicable_key": "strat_option_applicable"
+    },
+    {
+      "bookmark": "strat_option_market_data_cycle",
+      "type": "qa",
+      "prompt": "行情数据来源，盘中交易使用的数据周期",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "option",
+      "applicable_key": "strat_option_applicable"
+    },
+    {
+      "bookmark": "strat_option_frequency_holding_pricing",
+      "type": "qa",
+      "prompt": "各策略交易频率和大致持仓周期？期权定价模型的计算频率？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "option",
+      "applicable_key": "strat_option_applicable"
+    },
+    {
+      "bookmark": "strat_option_hedging",
+      "type": "qa",
+      "prompt": "对冲方式和频率（是否有期货头寸，方向敞口多大，对冲比例、对冲头寸）",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "option",
+      "applicable_key": "strat_option_applicable"
+    },
+    {
+      "bookmark": "strat_option_greeks_tail_risk",
+      "type": "qa",
+      "prompt": "各主要子策略采用的风险监控手段，对应的希腊字母敞口？如何应对尾部风险？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "option",
+      "applicable_key": "strat_option_applicable"
+    },
+    {
+      "bookmark": "strat_option_position_holiday",
+      "type": "qa",
+      "prompt": "账户的仓位管理思路？长节假日的仓位是否调整？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "option",
+      "applicable_key": "strat_option_applicable"
+    },
+    {
+      "bookmark": "strat_option_risk_system",
+      "type": "qa",
+      "prompt": "所使用的期权风控系统是否自建？外部采购的系统名称？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "option",
+      "applicable_key": "strat_option_applicable"
+    },
+    {
+      "bookmark": "strat_option_stress_test",
+      "type": "qa",
+      "prompt": "策略上线前是否进行极端行情压力测试，请简述压测的主要情境。",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "option",
+      "applicable_key": "strat_option_applicable"
+    },
+    {
+      "bookmark": "strat_option_trading_system",
+      "type": "qa",
+      "prompt": "交易系统的构建方式（交易下单方式：程序化or手工；自建或者用现成系统）",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "option",
+      "applicable_key": "strat_option_applicable"
+    },
+    {
+      "bookmark": "strat_option_signal_pm_trader_roles",
+      "type": "qa",
+      "prompt": "策略信号选择：程序化决策还是交易员决策？PM和交易员的职责分工？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "option",
+      "applicable_key": "strat_option_applicable"
+    },
+    {
+      "bookmark": "strat_option_capacity",
+      "type": "qa",
+      "prompt": "当前策略的市场容量上限，决定该容量的因素？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "option",
+      "applicable_key": "strat_option_applicable"
+    },
+    {
+      "bookmark": "strat_option_market_suitability",
+      "type": "qa",
+      "prompt": "请描述策略最适应的行情特征与最不适应的行情特征？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "option",
+      "applicable_key": "strat_option_applicable"
+    },
+    {
+      "bookmark": "strat_option_top_drawdowns",
+      "type": "qa",
+      "prompt": "策略运作以来的最大三次日线回辙，发生的时间及原因？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "option",
+      "applicable_key": "strat_option_applicable"
+    },
+    {
+      "bookmark": "strat_option_competitive_advantage",
+      "type": "qa",
+      "prompt": "市场上是否有同类策略？管理人的主要优势在哪里？",
+      "section": 2,
+      "insertion_mode": "append_after_question",
+      "strategy": "option",
+      "applicable_key": "strat_option_applicable"
+    },
+    {
+      "bookmark": "image_performance_comparison",
+      "type": "image",
+      "prompt": "拟入池产品与该产品净值走势对比图",
+      "section": 2,
+      "insertion_mode": "bookmark_image"
+    },
+    {
+      "bookmark": "qa_section3_q120_answer",
+      "type": "qa",
+      "prompt": "管理人风险管理方法、风险控制系统特点",
+      "section": 3,
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "qa_section3_q121_answer",
+      "type": "qa",
+      "prompt": "是否建立了净值预警机制，相应的风险管理预案",
+      "section": 3,
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "qa_section3_q122_answer",
+      "type": "qa",
+      "prompt": "管理人是否存在制度规定的旗下产品不得入池的以下情形",
+      "section": 3,
+      "insertion_mode": "append_after_following_block"
+    },
+    {
+      "bookmark": "qa_section4_q123_answer",
+      "type": "qa",
+      "prompt": "管理人各类产品管理概况",
+      "section": 4,
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "qa_section4_q124_answer",
+      "type": "qa",
+      "prompt": "管理人三年内规划达到的资产管理规模水平、公司认为未来最理想的管理规模",
+      "section": 4,
+      "insertion_mode": "blank_paragraph"
+    },
+    {
+      "bookmark": "qa_section5_q125_answer",
+      "type": "qa",
+      "prompt": "（一）查询全国企业信用信息公示系统https://www.gsxt.gov.cn/index.html",
+      "section": 5,
+      "insertion_mode": "append_after_question"
+    },
+    {
+      "bookmark": "qa_section5_q126_answer",
+      "type": "qa",
+      "prompt": "（二）中国执行信息公开网 http://zxgk.court.gov.cn/",
+      "section": 5,
+      "insertion_mode": "append_after_question"
+    },
+    {
+      "bookmark": "qa_section5_q127_answer",
+      "type": "qa",
+      "prompt": "（三）证券期货市场失信记录查询平台https://neris.csrc.gov.cn/shixinchaxun/",
+      "section": 5,
+      "insertion_mode": "append_after_question"
+    },
+    {
+      "bookmark": "image_equity_structure",
+      "type": "image",
+      "prompt": "变更后股权结构图",
+      "section": 1,
+      "insertion_mode": "bookmark_image"
+    },
+    {
+      "bookmark": "qa_section5_credit_screenshot_1",
+      "type": "image",
+      "prompt": "截图：",
+      "insertion_mode": "bookmark_image"
+    },
+    {
+      "bookmark": "qa_section5_credit_screenshot_2",
+      "type": "image",
+      "prompt": "截图：",
+      "insertion_mode": "bookmark_image"
+    },
+    {
+      "bookmark": "qa_section5_credit_screenshot_3",
+      "type": "image",
+      "prompt": "截图：",
+      "insertion_mode": "bookmark_image"
+    },
+    {
+      "bookmark": "table_1_data_cutoff_date",
+      "type": "table_cutoff_date",
+      "prompt": "数据截止日期",
+      "table": 1
+    },
+    {
+      "bookmark": "table_2_data_cutoff_date",
+      "type": "table_cutoff_date",
+      "prompt": "数据截止日期",
+      "table": 2
+    },
+    {
+      "bookmark": "table_3_data_cutoff_date",
+      "type": "table_cutoff_date",
+      "prompt": "数据截止日期",
+      "table": 3
+    },
+    {
+      "bookmark": "table_4_data_cutoff_date",
+      "type": "table_cutoff_date",
+      "prompt": "数据截止日期",
+      "table": 4
+    },
+    {
+      "bookmark": "table_5_data_cutoff_date",
+      "type": "table_cutoff_date",
+      "prompt": "数据截止日期",
+      "table": 5
+    },
+    {
+      "bookmark": "table_6_data_cutoff_date",
+      "type": "table_cutoff_date",
+      "prompt": "数据截止日期",
+      "table": 6
+    },
+    {
+      "bookmark": "table_7_data_cutoff_date",
+      "type": "table_cutoff_date",
+      "prompt": "数据截止日期",
+      "table": 7
+    },
+    {
+      "bookmark": "table_8_data_cutoff_date",
+      "type": "table_cutoff_date",
+      "prompt": "数据截止日期",
+      "table": 8
+    },
+    {
+      "bookmark": "table_9_data_cutoff_date",
+      "type": "table_cutoff_date",
+      "prompt": "数据截止日期",
+      "table": 9
+    },
+    {
+      "bookmark": "table_10_data_cutoff_date",
+      "type": "table_cutoff_date",
+      "prompt": "数据截止日期",
+      "table": 10
+    },
+    {
+      "bookmark": "table_11_data_cutoff_date",
+      "type": "table_cutoff_date",
+      "prompt": "数据截止日期",
+      "table": 11
+    },
+    {
+      "bookmark": "table_12_data_cutoff_date",
+      "type": "table_cutoff_date",
+      "prompt": "数据截止日期",
+      "table": 12
+    }
+  ]
+}
