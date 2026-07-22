@@ -1,0 +1,208 @@
+# FOF Due Diligence Report Backend
+
+基于 FastAPI、SQLAlchemy 和 Pydantic 的 FOF 尽调报告后端。系统提供管理人、
+产品、尽调报告 CRUD，支持报告校验、提交、归档，以及按既有附件 1-1/1-2
+模板生成并下载 DOCX。
+
+Word 模板、书签清单、生成器和校验器均复用桌面“任务”目录第二、三阶段的
+既有成果；测试夹具也直接复制自第三阶段最小数据，没有创建业务样例数据。
+
+## Project structure
+
+```text
+backend/
+├── app/
+│   ├── main.py
+│   ├── database.py
+│   ├── models/                 # SQLAlchemy 表模型
+│   ├── schemas/                # Pydantic 请求/响应模型
+│   ├── routers/                # API 路由
+│   ├── services/               # 业务校验与 Word 生成
+│   └── templates/              # 两类官方模板及书签清单
+├── docx_engine/                # 第三阶段书签填充引擎
+├── validator/                  # 第三阶段 DOCX 校验器
+├── generated_reports/
+├── uploaded_images/            # API 上传图片（运行时自动创建）
+├── tests/
+├── requirements.txt
+├── pytest.ini
+├── .env.example
+└── README.md
+```
+
+## Setup
+
+Run these commands from the `backend/` directory:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+```
+
+On Windows, activate the environment with `.venv\Scripts\activate` instead.
+
+## Database configuration
+
+本地开发无需配置。应用默认使用 SQLite，并在首次启动时创建
+`backend/fof_reports.db`。SQLite 外键检查已开启。
+
+To use another database, export `DATABASE_URL` before starting the service. For
+example:
+
+```bash
+export DATABASE_URL="postgresql+psycopg://username:password@localhost:5432/fof_reports"
+```
+
+切换 PostgreSQL 时还需要安装对应的 SQLAlchemy 驱动。
+
+## Run
+
+```bash
+uvicorn app.main:app --reload
+```
+
+Available URLs:
+
+- Service: <http://127.0.0.1:8000>
+- Health check: <http://127.0.0.1:8000/health>
+- Swagger documentation: <http://127.0.0.1:8000/docs>
+- OpenAPI schema: <http://127.0.0.1:8000/openapi.json>
+
+Vue 开发服务器默认允许从 `http://127.0.0.1:5173` 或
+`http://localhost:5173` 跨域访问。部署到其他地址时，在 `.env` 或启动环境中设置：
+
+```bash
+export CORS_ORIGINS="https://your-frontend.example.com"
+```
+
+Expected health response:
+
+```json
+{
+  "status": "ok",
+  "service": "fof-report-backend"
+}
+```
+
+## Test
+
+```bash
+pytest
+```
+
+测试覆盖健康检查、三类对象创建与查询、两类模板生成、文件下载、报告校验、
+`draft → submitted → archived` 状态流转及关联数据删除保护。
+
+## API
+
+### 管理人
+
+| Method | Path | Description |
+|---|---|---|
+| POST | `/api/managers` | 创建管理人 |
+| GET | `/api/managers` | 分页查询管理人 |
+| GET | `/api/managers/{id}` | 查询管理人详情 |
+| PUT | `/api/managers/{id}` | 更新管理人 |
+| DELETE | `/api/managers/{id}` | 删除无关联数据的管理人 |
+
+### 产品
+
+| Method | Path | Description |
+|---|---|---|
+| POST | `/api/products` | 创建产品 |
+| GET | `/api/products` | 分页查询产品，可按管理人筛选 |
+| GET | `/api/products/{id}` | 查询产品详情 |
+| PUT | `/api/products/{id}` | 更新产品 |
+| DELETE | `/api/products/{id}` | 删除无关联报告的产品 |
+
+### 尽调报告
+
+| Method | Path | Description |
+|---|---|---|
+| POST | `/api/reports` | 创建草稿 |
+| GET | `/api/reports` | 分页查询，可按状态、管理人、产品筛选 |
+| GET | `/api/reports/{id}` | 查询报告详情 |
+| PUT | `/api/reports/{id}` | 编辑草稿 |
+| DELETE | `/api/reports/{id}` | 删除草稿 |
+| POST | `/api/reports/{id}/validate` | 校验关联关系和模板内容 |
+| POST | `/api/reports/{id}/submit` | 提交校验通过的草稿 |
+| POST | `/api/reports/{id}/archive` | 归档已提交报告 |
+| POST | `/api/reports/{id}/generate` | 生成 DOCX 并返回下载地址 |
+| POST | `/api/reports/{id}/generation-jobs` | 创建异步 DOCX 生成任务，立即返回任务状态 |
+| GET | `/api/reports/{id}/generation-jobs/{job_id}` | 查询生成任务进度与下载地址 |
+| POST | `/api/reports/{id}/images/{field}` | 上传 PNG/JPEG 并写入图片书签 |
+| DELETE | `/api/reports/{id}/images/{field}` | 删除草稿中的已上传图片 |
+| GET | `/api/files/{filename}` | 下载生成的 DOCX |
+| GET | `/api/files/images/{report_id}/{filename}` | 预览或下载已上传图片 |
+
+报告的 `template_type` 可选：
+
+- `private_fund`：附件 1-1 私募基金模板；
+- `licensed_institution`：附件 1-2 持牌金融机构模板。
+
+报告的 `content` 是书签字段 JSON。可直接参考：
+
+- `tests/fixtures/private_fund_minimal.json`
+- `tests/fixtures/licensed_institution_minimal.json`
+
+`content` 至少需要提供两类第三阶段最小数据共同包含的身份字段，并至少选择
+一种 `cover_strategy_*` 投资策略。完整字段以 `app/templates/` 下对应 manifest
+为准。Swagger 会展示所有请求与响应格式。
+
+### Upload report images
+
+图片上传接口不使用 Base64，也不要求前端提交服务器路径。请求体就是图片二进制：
+
+```bash
+curl -X POST \
+  "http://127.0.0.1:8000/api/reports/1/images/image_org_structure" \
+  -H "Content-Type: image/png" \
+  -H "X-Filename: org-structure.png" \
+  --data-binary "@org-structure.png"
+```
+
+后端会验证：
+
+- 报告必须仍是草稿；
+- 字段必须是当前模板 manifest 中声明的图片书签；
+- 文件真实格式必须是 PNG 或 JPEG；
+- 单张图片不得超过 10 MB；
+- 保存文件名和目录由后端生成，防止路径穿越。
+
+附件 1-1 当前支持的图片字段：
+
+```text
+image_org_structure
+image_performance_comparison
+image_equity_structure
+qa_section5_credit_screenshot_1
+qa_section5_credit_screenshot_2
+qa_section5_credit_screenshot_3
+```
+
+## State rules
+
+```text
+draft --submit--> submitted --archive--> archived
+```
+
+- 只有草稿可以编辑和删除；
+- 只有校验通过的草稿可以提交；
+- 只有已提交报告可以归档；
+- 已提交或归档报告仍可生成和下载 Word，但不能改写报告内容。
+
+## Asynchronous generation
+
+前端预览使用异步任务接口，不会让浏览器请求持续等待 Word 生成。任务状态持久化在
+数据库的 `report_generation_jobs` 表中，依次为：
+
+```text
+queued → running → completed
+                 ↘ failed
+```
+
+创建任务时会冻结当前 `template_type` 和书签内容快照，因此附件 1-1 与附件 1-2
+不会在生成途中互相混用。服务重启后会自动恢复未完成任务。默认每个服务实例同时
+处理两个任务，可通过 `REPORT_GENERATION_WORKERS` 调整。原同步 `/generate` 接口
+保留，供兼容已有调用方使用。

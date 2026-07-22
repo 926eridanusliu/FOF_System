@@ -1,0 +1,17 @@
+{
+  "strategies": {
+    "quant": {
+      "_applicable": true,
+      "factor_entry": "因子须通过样本外稳定性检验"
+    },
+    "cta": {
+      "_applicable": false
+    },
+    "bond": {
+      "_applicable": false
+    },
+    "option": {
+      "_applicable": false
+    }
+  }
+}

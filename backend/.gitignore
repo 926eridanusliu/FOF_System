@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.env
+*.db
+generated_reports/*.docx
+generated_reports/*.json
+uploaded_images/
