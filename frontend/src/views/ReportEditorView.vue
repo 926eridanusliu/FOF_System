@@ -12,6 +12,7 @@ import TableEditor from '../components/TableEditor.vue'
 import ImageUploader from '../components/ImageUploader.vue'
 import ValidationPanel from '../components/ValidationPanel.vue'
 import ScorecardPanel from '../components/ScorecardPanel.vue'
+import VersionHistoryPanel from '../components/VersionHistoryPanel.vue'
 
 const route = useRoute(); const router = useRouter(); const reportId = Number(route.params.id)
 const loading = ref(true); const saving = ref(false); const dirty = ref(false); const hydrating = ref(true)
@@ -97,6 +98,16 @@ async function archiveReport() {
   catch (error) { if (error !== 'cancel' && error !== 'close') ElMessage.error(apiMessage(error)) }
 }
 
+async function handleVersionRestored(restored: Report) {
+  hydrate(restored)
+  ;[manager.value, products.value] = await Promise.all([
+    api.managers.get(restored.manager_id),
+    api.products.list(restored.manager_id),
+  ])
+  validation.value = undefined
+  activeTab.value = 'history'
+}
+
 async function goPreview() { if (dirty.value && !await save()) return; router.push(`/reports/${reportId}/preview`) }
 
 async function syncImage(field: string, removed: boolean) {
@@ -176,6 +187,14 @@ onBeforeRouteLeave(async () => {
         <el-tab-pane name="compliance" label="合规与附件"><section class="field-section"><h2 class="field-section-heading">合规、信用与结论</h2><FieldGroup :fields="complianceFields" :content="content" :disabled="disabled" /><h2 v-if="imageFields.some((item: ManifestField) => (fieldSection(item) || 0) >= 4)" class="field-section-heading">信用截图</h2><ImageUploader :report-id="reportId" :fields="imageFields.filter((item: ManifestField) => (fieldSection(item) || 0) >= 4)" :content="content" :disabled="disabled" @changed="syncImage" /></section></el-tab-pane>
         <el-tab-pane name="tables" label="数据表格"><section><h2 class="field-section-heading">模板表格内嵌编辑</h2><TableEditor :fields="tableFields" :content="content" :disabled="disabled" /></section></el-tab-pane>
         <el-tab-pane name="scorecard" label="准入评分卡"><ScorecardPanel :report-id="reportId" :disabled="disabled" /></el-tab-pane>
+        <el-tab-pane name="history" label="版本历史">
+          <VersionHistoryPanel
+            :report-id="reportId"
+            :refresh-key="report.submitted_at || ''"
+            :has-unsaved-changes="dirty"
+            @restored="handleVersionRestored"
+          />
+        </el-tab-pane>
         <el-tab-pane name="validation" label="校验"><section class="field-section"><h2 class="field-section-heading">提交前校验</h2><ValidationPanel :result="validation" /></section></el-tab-pane>
       </el-tabs>
     </div>

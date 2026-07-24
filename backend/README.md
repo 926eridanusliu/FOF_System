@@ -24,6 +24,7 @@ backend/
 ├── generated_reports/
 ├── uploaded_images/            # API 上传图片（运行时自动创建）
 ├── uploaded_nav/               # API 上传净值文件（运行时自动创建）
+├── report_versions/            # 历史版本的不可变图片/净值副本
 ├── tests/
 ├── requirements.txt
 ├── pytest.ini
@@ -93,7 +94,8 @@ pytest
 ```
 
 测试覆盖健康检查、三类对象创建与查询、两类模板生成、文件下载、报告校验、
-`draft → submitted → archived` 状态流转及关联数据删除保护。
+`draft → submitted → archived` 状态流转、不可变版本快照、字段对比、附件回滚及
+关联数据删除保护。
 
 ## API
 
@@ -138,6 +140,10 @@ pytest
 | POST | `/api/reports/{id}/scorecard/nav` | 上传并识别 `.xlsx/.csv` 净值文件 |
 | POST | `/api/reports/{id}/scorecard/calculate` | 计算并保存定量、定性和合规扣分 |
 | DELETE | `/api/reports/{id}/scorecard/nav` | 删除净值文件及已有评分结果 |
+| GET | `/api/reports/{id}/versions` | 按版本号倒序查询提交快照 |
+| GET | `/api/reports/{id}/versions/{version}` | 查询一个不可变版本 |
+| GET | `/api/reports/{id}/versions/compare` | 对比两个版本的字段变化 |
+| POST | `/api/reports/{id}/versions/{version}/restore` | 将历史版本复制回当前草稿 |
 | GET | `/api/files/{filename}` | 下载生成的 DOCX |
 | GET | `/api/files/images/{report_id}/{filename}` | 预览或下载已上传图片 |
 
@@ -194,8 +200,10 @@ draft --submit--> submitted --archive--> archived
 
 - 只有草稿可以编辑和删除；
 - 只有校验通过的草稿可以提交；
+- 每次提交会创建新的不可变历史版本；
 - 只有已提交报告可以归档；
 - 已提交或归档报告仍可生成和下载 Word，但不能改写报告内容。
+- 回滚会将选中版本复制为新的当前草稿；原快照不会改变，重新提交时会生成下一版本。
 
 ## Asynchronous generation
 
@@ -243,3 +251,25 @@ queued → running → completed
 
 评分完成后，同步和异步报告生成都会将评分结果快照作为附录写入 Word 末尾。
 未计算评分卡的历史报告仍可按原流程生成，不会出现空白附录。
+
+## Report version history
+
+每次调用 `/submit` 时，报告状态变化和历史快照写入同一个数据库事务。快照包括：
+
+- 报告标题、关联管理人/产品、模板类型、全部书签字段、结论和风险项；
+- 当时已经计算的评分卡输入、指标、逐项评分和总分；
+- 已上传图片及原始净值文件的独立副本；
+- 用于检查快照是否被改写的 SHA-256 哈希。
+
+历史版本没有更新或删除接口，数据库模型也会拒绝 ORM 更新/删除。已经产生历史
+版本的报告即使回滚为草稿，也不能删除。
+
+版本对比示例：
+
+```text
+GET /api/reports/1/versions/compare?from_version=1&to_version=2
+```
+
+响应逐项给出字段路径、中文字段名称、变化类型以及前后值。回滚接口会先校验快照
+和附件哈希，再把选中版本复制到当前报告并将状态设为 `draft`。图片和净值文件会
+从历史副本复制到新的草稿存储位置，因此之后的编辑不会改写旧版本文件。

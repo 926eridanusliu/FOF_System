@@ -170,3 +170,33 @@ export interface ReportScorecard {
   admitted: boolean | null
   calculated_at: string | null
 }
+
+export interface ReportVersionSummary {
+  id: number
+  report_id: number
+  version_number: number
+  title: string
+  template_type: TemplateType
+  total_score: number | null
+  submitted_at: string
+  created_at: string
+  snapshot_hash: string
+}
+
+export type VersionChangeType = 'added' | 'removed' | 'changed'
+
+export interface VersionDiffItem {
+  field_path: string
+  label: string
+  change_type: VersionChangeType
+  before: unknown
+  after: unknown
+}
+
+export interface ReportVersionComparison {
+  report_id: number
+  from_version: number
+  to_version: number
+  change_count: number
+  changes: VersionDiffItem[]
+}

@@ -7,6 +7,7 @@ from docx.image.image import Image as DocxImage
 from fastapi import APIRouter, Body, Depends, Header, HTTPException, Query, Response, status
 from fastapi.responses import FileResponse
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app import storage
@@ -15,6 +16,7 @@ from app.models.manager import Manager
 from app.models.product import Product
 from app.models.generation_job import GenerationJobStatus, ReportGenerationJob
 from app.models.report import DueDiligenceReport, ReportStatus
+from app.models.report_version import ReportVersion
 from app.models.scorecard import ReportScorecard
 from app.schemas.generation_job import GenerationJobRead
 from app.schemas.report import (
@@ -28,6 +30,10 @@ from app.schemas.report import (
 from app.services.document_generator import generate_document
 from app.services.generation_queue import enqueue_generation
 from app.services.report_validator import manifest_image_fields, validate_report
+from app.services.report_versions import (
+    create_report_version,
+    remove_uncommitted_version_files,
+)
 from app.services.scorecard import scorecard_snapshot
 
 
@@ -121,6 +127,10 @@ def delete_report(report_id: int, db: Session = Depends(get_db)) -> Response:
     report = _get_report(report_id, db)
     if report.status != ReportStatus.DRAFT:
         raise HTTPException(status_code=409, detail="只有草稿报告可以删除")
+    if db.scalar(
+        select(ReportVersion.id).where(ReportVersion.report_id == report_id).limit(1)
+    ):
+        raise HTTPException(status_code=409, detail="已有历史版本的报告不能删除")
     db.delete(report)
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
@@ -145,9 +155,32 @@ def submit_report(report_id: int, db: Session = Depends(get_db)) -> DueDiligence
     )
     if not validation.valid:
         raise HTTPException(status_code=422, detail=validation.model_dump())
+    manager = db.get(Manager, report.manager_id)
+    product = db.get(Product, report.product_id)
+    if manager is None or product is None:
+        raise HTTPException(status_code=409, detail="报告关联的管理人或产品不存在")
+    submitted_at = datetime.now(timezone.utc)
     report.status = ReportStatus.SUBMITTED
-    report.submitted_at = datetime.now(timezone.utc)
-    db.commit()
+    report.submitted_at = submitted_at
+    version_dir: Path | None = None
+    try:
+        version, version_dir = create_report_version(
+            report,
+            manager,
+            product,
+            db.scalar(
+                select(ReportScorecard).where(ReportScorecard.report_id == report_id)
+            ),
+            submitted_at,
+            db,
+        )
+        db.add(version)
+        db.commit()
+    except (OSError, ValueError, IntegrityError) as exc:
+        db.rollback()
+        if version_dir is not None:
+            remove_uncommitted_version_files(version_dir)
+        raise HTTPException(status_code=409, detail=f"创建历史版本失败：{exc}") from exc
     db.refresh(report)
     return report
 

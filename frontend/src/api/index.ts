@@ -6,6 +6,8 @@ import type {
   Product,
   Report,
   ReportScorecard,
+  ReportVersionComparison,
+  ReportVersionSummary,
   ReportStatus,
   ScorecardCalculationInput,
   ValidationResult,
@@ -97,6 +99,18 @@ export const api = {
       json('POST', body),
     ),
     removeNav: (id: number) => request<void>(`/api/reports/${id}/scorecard/nav`, { method: 'DELETE' }),
+    listVersions: (id: number) => request<ReportVersionSummary[]>(`/api/reports/${id}/versions`),
+    compareVersions: (id: number, fromVersion: number, toVersion: number) => {
+      const params = new URLSearchParams({
+        from_version: String(fromVersion),
+        to_version: String(toVersion),
+      })
+      return request<ReportVersionComparison>(`/api/reports/${id}/versions/compare?${params}`)
+    },
+    restoreVersion: (id: number, versionNumber: number) => request<Report>(
+      `/api/reports/${id}/versions/${versionNumber}/restore`,
+      { method: 'POST' },
+    ),
   },
 }
 

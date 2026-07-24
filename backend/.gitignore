@@ -8,3 +8,4 @@ generated_reports/*.docx
 generated_reports/*.json
 uploaded_images/
 uploaded_nav/
+report_versions/
