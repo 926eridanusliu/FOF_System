@@ -44,6 +44,15 @@ python -m pip install -r requirements.txt
 
 On Windows, activate the environment with `.venv\Scripts\activate` instead.
 
+如需自定义数据库或跨域配置：
+
+```bash
+cp .env.example .env
+```
+
+后端会自动读取 `backend/.env`。相对 SQLite 路径始终以 `backend/` 为基准，
+不会因终端当前目录不同而创建到其他位置。`.env` 已被 Git 忽略。
+
 ## Database configuration
 
 本地开发无需配置。应用默认使用 SQLite，并在首次启动时创建
@@ -77,6 +86,9 @@ Vue 开发服务器默认允许从 `http://127.0.0.1:5173` 或
 ```bash
 export CORS_ORIGINS="https://your-frontend.example.com"
 ```
+
+依赖版本已在 `requirements.txt` 中固定；升级依赖时需要重新执行完整测试，避免
+不同机器安装到不兼容的 FastAPI、Starlette 或 SQLAlchemy 版本。
 
 Expected health response:
 

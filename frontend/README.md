@@ -55,12 +55,15 @@ uvicorn app.main:app --reload
 
 ```bash
 cd frontend
-npm install
+npm ci
 npm run dev
 ```
 
 打开 <http://127.0.0.1:5173>。开发服务器会把 `/api` 和 `/health` 请求代理到
 `http://127.0.0.1:8000`。
+
+`npm run preview` 使用的 4173 端口也配置了相同代理，因此本地生产预览不会把
+`/api` 请求错误地发送给前端静态服务器。
 
 ## 构建与测试
 
@@ -69,5 +72,6 @@ npm run build
 npm test
 ```
 
-构建产物位于 `frontend/dist/`。如将前后端部署到不同域名，请在后端环境变量
+首次或锁文件更新后使用 `npm ci` 严格按照 `package-lock.json` 安装依赖。构建
+产物位于 `frontend/dist/`。如将前后端部署到不同域名，请在后端环境变量
 `CORS_ORIGINS` 中用英文逗号列出允许的前端地址。

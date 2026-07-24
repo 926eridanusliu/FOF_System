@@ -26,7 +26,7 @@ uvicorn app.main:app --reload
 
 ```bash
 cd frontend
-npm install
+npm ci
 npm run dev
 ```
 
@@ -34,3 +34,6 @@ npm run dev
 <http://127.0.0.1:8000/docs>。
 
 更完整的配置、接口与运行说明见 `backend/README.md` 和 `frontend/README.md`。
+
+每次提交和 Pull Request 都会通过 `.github/workflows/ci.yml` 自动执行后端测试、
+前端测试和前端生产构建。
