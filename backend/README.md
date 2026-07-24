@@ -2,7 +2,7 @@
 
 基于 FastAPI、SQLAlchemy 和 Pydantic 的 FOF 尽调报告后端。系统提供管理人、
 产品、尽调报告 CRUD，支持报告校验、提交、归档，以及按既有附件 1-1/1-2
-模板生成并下载 DOCX。
+模板生成并下载 DOCX。报告生成完成后可通过可配置的 Hermes Feishu 网关发送通知。
 
 Word 模板、书签清单、生成器和校验器均复用桌面“任务”目录第二、三阶段的
 既有成果；测试夹具也直接复制自第三阶段最小数据，没有创建业务样例数据。
@@ -25,6 +25,7 @@ backend/
 ├── uploaded_images/            # API 上传图片（运行时自动创建）
 ├── uploaded_nav/               # API 上传净值文件（运行时自动创建）
 ├── report_versions/            # 历史版本的不可变图片/净值副本
+├── config/                     # Hermes 私密配置说明（真实配置不入 Git）
 ├── tests/
 ├── requirements.txt
 ├── pytest.ini
@@ -58,7 +59,10 @@ cp .env.example .env
 本地开发无需配置。应用默认使用 SQLite，并在首次启动时创建
 `backend/fof_reports.db`。SQLite 外键检查已开启。
 
-To use another database, export `DATABASE_URL` before starting the service. For
+Production deployments should set `FOF_DATA_DIR` to a persistent directory outside
+the source checkout. The SQLite database, generated reports, uploaded images/NAV
+files, and version attachments then stay intact across code updates. To use another
+database, export `DATABASE_URL` before starting the service. For
 example:
 
 ```bash
@@ -156,6 +160,9 @@ pytest
 | GET | `/api/reports/{id}/versions/{version}` | 查询一个不可变版本 |
 | GET | `/api/reports/{id}/versions/compare` | 对比两个版本的字段变化 |
 | POST | `/api/reports/{id}/versions/{version}/restore` | 将历史版本复制回当前草稿 |
+| GET | `/api/reports/{id}/notifications` | 查询飞书通知发送记录 |
+| POST | `/api/reports/{id}/notifications/{notification_id}/retry` | 手动重试通知 |
+| GET | `/api/notifications/config` | 查询非敏感的飞书配置完整度 |
 | GET | `/api/files/{filename}` | 下载生成的 DOCX |
 | GET | `/api/files/images/{report_id}/{filename}` | 预览或下载已上传图片 |
 
@@ -285,3 +292,13 @@ GET /api/reports/1/versions/compare?from_version=1&to_version=2
 响应逐项给出字段路径、中文字段名称、变化类型以及前后值。回滚接口会先校验快照
 和附件哈希，再把选中版本复制到当前报告并将状态设为 `draft`。图片和净值文件会
 从历史副本复制到新的草稿存储位置，因此之后的编辑不会改写旧版本文件。
+
+## Hermes Feishu notification
+
+同步和异步报告成功生成后都会写入 `report_notifications` 通知发件箱。飞书网关
+故障不影响 Word 生成和下载；网络失败会有限重试，服务重启会恢复未完成任务。
+系统不会把鉴权请求头、完整网关地址或网关响应体返回给前端。
+
+网关协议和私密信息不能从业务模板推断，因此默认
+`HERMES_FEISHU_ENABLED=false`。完整接入步骤见
+`../docs/FEISHU_INTEGRATION.md`。

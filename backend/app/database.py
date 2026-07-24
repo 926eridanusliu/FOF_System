@@ -6,10 +6,12 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
+from app.storage import DATA_DIR
+
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BACKEND_DIR / ".env")
-DEFAULT_DATABASE_URL = f"sqlite:///{BACKEND_DIR / 'fof_reports.db'}"
+DEFAULT_DATABASE_URL = f"sqlite:///{DATA_DIR / 'fof_reports.db'}"
 
 
 def resolve_database_url(value: str | None) -> str:

@@ -144,9 +144,11 @@ def create_report_version(
         for field, value in (report.content or {}).items():
             if not isinstance(value, dict) or not value.get("path"):
                 continue
-            source = Path(str(value["path"])).expanduser().resolve()
-            upload_root = storage.UPLOAD_DIR.resolve()
-            if not source.is_relative_to(upload_root) or not source.is_file():
+            try:
+                source = storage.resolve_uploaded_image(value["path"])
+            except ValueError:
+                continue
+            if not source.is_file():
                 continue
             image_dir = temporary_dir / "images"
             image_dir.mkdir(exist_ok=True)
@@ -374,7 +376,7 @@ def restore_report_version(
             shutil.copy2(source, target)
             created_files.append(target)
             content[field] = {
-                "path": str(target.resolve()),
+                "path": storage.upload_relative_path(target),
                 "original_filename": metadata.get("original_filename") or source.name,
             }
 

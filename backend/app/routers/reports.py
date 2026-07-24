@@ -35,6 +35,7 @@ from app.services.report_versions import (
     remove_uncommitted_version_files,
 )
 from app.services.scorecard import scorecard_snapshot
+from app.services.feishu_notifications import create_notification, enqueue_notification
 
 
 router = APIRouter(prefix="/api/reports", tags=["Reports"])
@@ -200,8 +201,10 @@ def archive_report(report_id: int, db: Session = Depends(get_db)) -> DueDiligenc
 @router.post("/{report_id}/generate", response_model=GenerateResponse)
 def generate_report(report_id: int, db: Session = Depends(get_db)) -> GenerateResponse:
     report = _get_report(report_id, db)
+    manager = db.get(Manager, report.manager_id)
+    product = db.get(Product, report.product_id)
     validation = validate_report(
-        report, db.get(Manager, report.manager_id), db.get(Product, report.product_id)
+        report, manager, product
     )
     if not validation.valid:
         raise HTTPException(status_code=422, detail=validation.model_dump())
@@ -213,7 +216,17 @@ def generate_report(report_id: int, db: Session = Depends(get_db)) -> GenerateRe
     except (OSError, ValueError, KeyError) as exc:
         raise HTTPException(status_code=500, detail=f"报告生成失败：{exc}") from exc
     report.generated_filename = generated.filename
+    if manager is None or product is None:
+        raise HTTPException(status_code=409, detail="报告关联的管理人或产品不存在")
+    notification = create_notification(
+        db,
+        report,
+        manager,
+        product,
+        generated.filename,
+    )
     db.commit()
+    enqueue_notification(notification.id, db.get_bind())
     return GenerateResponse(
         filename=generated.filename,
         download_url=f"/api/files/{generated.filename}",
@@ -335,7 +348,7 @@ def upload_report_image(
     if legacy_field:
         content.pop(legacy_field, None)
     content[field_name] = {
-        "path": str(target.resolve()),
+        "path": storage.upload_relative_path(target),
         "original_filename": original_filename or stored_filename,
     }
     report.content = content
@@ -376,9 +389,11 @@ def remove_report_image(
 
     raw_path = image_value.get("path") if isinstance(image_value, dict) else image_value
     if raw_path:
-        stored_path = Path(str(raw_path)).resolve()
-        upload_root = storage.UPLOAD_DIR.resolve()
-        if stored_path.is_relative_to(upload_root) and stored_path.is_file():
+        try:
+            stored_path = storage.resolve_uploaded_image(raw_path)
+        except ValueError:
+            stored_path = None
+        if stored_path is not None and stored_path.is_file():
             stored_path.unlink()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 

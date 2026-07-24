@@ -9,8 +9,6 @@ from pathlib import Path
 
 from docx import Document
 from lxml import etree
-from PIL import Image
-
 PACKAGE_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PACKAGE_ROOT))
 
@@ -26,13 +24,8 @@ from docx_engine.table_filler import TableFiller
 class EngineTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        local_template = PACKAGE_ROOT / "FOF尽调报告_书签模板.docx"
-        cls.template = (
-            local_template
-            if local_template.exists()
-            else Path("/Users/a/Desktop/任务/第二阶段/1-1/2.2+2.3/FOF尽调报告_书签模板.docx")
-        )
-        cls.manifest = PACKAGE_ROOT / "bookmark_manifest.json"
+        cls.template = PACKAGE_ROOT / "app" / "templates" / "private_fund_template.docx"
+        cls.manifest = PACKAGE_ROOT / "app" / "templates" / "private_fund_manifest.json"
         assert cls.template.exists()
         assert cls.manifest.exists()
 
@@ -245,13 +238,18 @@ class EngineTestCase(unittest.TestCase):
             self.assertLess(answer, next_section)
 
     def test_revised_template_inserts_bookmarked_image(self):
-        revised_template = PACKAGE_ROOT / "FOF尽调报告_书签模板_2026修订版.docx"
-        revised_manifest = PACKAGE_ROOT / "bookmark_manifest_2026修订版.json"
+        revised_template = PACKAGE_ROOT / "app" / "templates" / "private_fund_template.docx"
+        revised_manifest = PACKAGE_ROOT / "app" / "templates" / "private_fund_manifest.json"
         if not revised_template.exists() or not revised_manifest.exists():
             self.skipTest("revised template is not available")
         with tempfile.TemporaryDirectory() as td:
-            image = Path(td) / "org.png"
-            Image.new("RGB", (600, 300), "white").save(image)
+            image = (
+                PACKAGE_ROOT
+                / "tests"
+                / "fixtures"
+                / "placeholders"
+                / "org_structure_placeholder.png"
+            )
             output = Path(td) / "image.docx"
             result = DocxGenerator(revised_template, revised_manifest).generate(
                 {"image_org_structure": str(image)},

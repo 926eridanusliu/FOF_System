@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import sys
 import tempfile
@@ -20,12 +21,18 @@ from validator.mapper import InputDataMapper
 
 
 class ValidatorTestCase(unittest.TestCase):
-    data_path = Path("/Users/a/Desktop/任务/已修正/yuanlan_data_corrected.json")
-    private_template = Path("/Users/a/Desktop/任务/第二阶段/1-1/2.2+2.3/FOF尽调报告_书签模板.docx")
-    licensed_template = Path("/Users/a/Desktop/任务/第二阶段/1-2/2.1/FOF尽调报告_持牌金融机构_书签模板.docx")
+    data_path = Path(os.getenv("FOF_VALIDATOR_TEST_DATA", ""))
+    private_template = OUTPUTS / "app" / "templates" / "private_fund_template.docx"
+    licensed_template = (
+        OUTPUTS / "app" / "templates" / "licensed_institution_template.docx"
+    )
 
     @classmethod
     def setUpClass(cls):
+        if not os.getenv("FOF_VALIDATOR_TEST_DATA") or not cls.data_path.is_file():
+            raise unittest.SkipTest(
+                "Set FOF_VALIDATOR_TEST_DATA to an approved full regression JSON file"
+            )
         cls.data = json.loads(cls.data_path.read_text(encoding="utf-8"))
 
     def test_licensed_exact_round_trip(self):
@@ -33,8 +40,8 @@ class ValidatorTestCase(unittest.TestCase):
             payload = InputDataMapper().map(self.data, "licensed")
             generated = Path(td) / "licensed.docx"
             DocxGenerator(
-                OUTPUTS / "FOF尽调报告_持牌金融机构_书签模板.docx",
-                OUTPUTS / "bookmark_manifest_持牌金融机构.json",
+                cls.licensed_template,
+                OUTPUTS / "app" / "templates" / "licensed_institution_manifest.json",
             ).generate(payload, generated)
             report = Validator(self.licensed_template).validate(generated, self.data)
             self.assertEqual(report.missing, 0)
@@ -48,7 +55,7 @@ class ValidatorTestCase(unittest.TestCase):
             generated = Path(td) / "private.docx"
             DocxGenerator(
                 self.private_template,
-                OUTPUTS / "bookmark_manifest.json",
+                OUTPUTS / "app" / "templates" / "private_fund_manifest.json",
             ).generate(payload, generated)
             report = Validator(self.private_template).validate(generated, self.data)
             self.assertEqual(report.missing, 0)
@@ -63,8 +70,8 @@ class ValidatorTestCase(unittest.TestCase):
             payload["attachment_extra_1"] = "不应出现的附件"
             generated = Path(td) / "bad_values.docx"
             DocxGenerator(
-                OUTPUTS / "FOF尽调报告_持牌金融机构_书签模板.docx",
-                OUTPUTS / "bookmark_manifest_持牌金融机构.json",
+                self.licensed_template,
+                OUTPUTS / "app" / "templates" / "licensed_institution_manifest.json",
             ).generate(payload, generated)
             report = Validator(self.licensed_template).validate(generated, self.data)
             self.assertGreaterEqual(report.mismatched, 1)
@@ -75,8 +82,8 @@ class ValidatorTestCase(unittest.TestCase):
             payload = InputDataMapper().map(self.data, "licensed")
             generated = Path(td) / "bad_format.docx"
             DocxGenerator(
-                OUTPUTS / "FOF尽调报告_持牌金融机构_书签模板.docx",
-                OUTPUTS / "bookmark_manifest_持牌金融机构.json",
+                self.licensed_template,
+                OUTPUTS / "app" / "templates" / "licensed_institution_manifest.json",
                 styles={
                     "qa": StyleSpec(
                         font_east_asia="Arial",
@@ -94,8 +101,8 @@ class ValidatorTestCase(unittest.TestCase):
             payload["cover_manager_name"] = ""
             generated = Path(td) / "missing.docx"
             DocxGenerator(
-                OUTPUTS / "FOF尽调报告_持牌金融机构_书签模板.docx",
-                OUTPUTS / "bookmark_manifest_持牌金融机构.json",
+                self.licensed_template,
+                OUTPUTS / "app" / "templates" / "licensed_institution_manifest.json",
             ).generate(payload, generated)
             report = Validator(self.licensed_template).validate(generated, self.data)
             self.assertGreaterEqual(report.missing, 1)
@@ -105,8 +112,8 @@ class ValidatorTestCase(unittest.TestCase):
             payload = InputDataMapper().map(self.data, "licensed")
             generated = Path(td) / "table_bad.docx"
             DocxGenerator(
-                OUTPUTS / "FOF尽调报告_持牌金融机构_书签模板.docx",
-                OUTPUTS / "bookmark_manifest_持牌金融机构.json",
+                self.licensed_template,
+                OUTPUTS / "app" / "templates" / "licensed_institution_manifest.json",
             ).generate(payload, generated)
             unpacked = Path(td) / "unpacked"
             with zipfile.ZipFile(generated) as archive:

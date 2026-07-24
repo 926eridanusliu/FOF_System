@@ -13,6 +13,9 @@ dist/
 backend/generated_reports/*
 !backend/generated_reports/.gitkeep
 backend/uploaded_images/
+backend/report_versions/
+backend/config/hermes_feishu_headers.json
+backend/config/hermes_feishu_payload.json
 work/
 frontend/vite.config.js
 frontend/vite.config.d.ts

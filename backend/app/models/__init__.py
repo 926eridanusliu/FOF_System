@@ -6,6 +6,7 @@ from app.models.report import DueDiligenceReport, ReportStatus, ReportTemplateTy
 from app.models.generation_job import GenerationJobStatus, ReportGenerationJob
 from app.models.scorecard import ReportScorecard
 from app.models.report_version import ReportVersion
+from app.models.notification import NotificationStatus, ReportNotification
 
 __all__ = [
     "Manager",
@@ -17,4 +18,6 @@ __all__ = [
     "ReportGenerationJob",
     "ReportScorecard",
     "ReportVersion",
+    "NotificationStatus",
+    "ReportNotification",
 ]

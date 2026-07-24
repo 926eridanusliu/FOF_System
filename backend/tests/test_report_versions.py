@@ -162,7 +162,9 @@ def test_version_restore_uses_immutable_image_copy(
     restored = client.post(f"/api/reports/{report_id}/versions/1/restore")
     assert restored.status_code == 200, restored.text
     for field in images:
-        restored_path = Path(restored.json()["content"][field]["path"])
+        restored_path = storage.resolve_uploaded_image(
+            restored.json()["content"][field]["path"]
+        )
         assert restored_path.is_file()
         assert restored_path.is_relative_to(upload_dir)
 

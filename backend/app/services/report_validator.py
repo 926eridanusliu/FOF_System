@@ -115,14 +115,16 @@ def validate_report(
             )
         )
 
-    upload_root = storage.UPLOAD_DIR.resolve()
     for field in manifest_image_fields(report.template_type):
         value = content.get(field)
         if not value:
             continue
         raw_path = value.get("path") if isinstance(value, dict) else value
-        image_path = Path(str(raw_path)).expanduser().resolve()
-        if not image_path.is_relative_to(upload_root) or not image_path.is_file():
+        try:
+            image_path = storage.resolve_uploaded_image(raw_path)
+        except ValueError:
+            image_path = None
+        if image_path is None or not image_path.is_file():
             errors.append(
                 ValidationIssue(
                     field=f"content.{field}",
