@@ -5,7 +5,9 @@ import type {
   Manager,
   Product,
   Report,
+  ReportScorecard,
   ReportStatus,
+  ScorecardCalculationInput,
   ValidationResult,
 } from '../types'
 
@@ -78,6 +80,23 @@ export const api = {
       { method: 'POST', body: file, headers: { 'Content-Type': file.type, 'X-Filename': encodeURIComponent(file.name) } },
     ),
     removeImage: (id: number, field: string) => request<void>(`/api/reports/${id}/images/${encodeURIComponent(field)}`, { method: 'DELETE' }),
+    getScorecard: (id: number) => request<ReportScorecard>(`/api/reports/${id}/scorecard`),
+    uploadNav: (id: number, file: File) => request<ReportScorecard>(
+      `/api/reports/${id}/scorecard/nav`,
+      {
+        method: 'POST',
+        body: file,
+        headers: {
+          'Content-Type': file.type || 'application/octet-stream',
+          'X-Filename': encodeURIComponent(file.name),
+        },
+      },
+    ),
+    calculateScorecard: (id: number, body: ScorecardCalculationInput) => request<ReportScorecard>(
+      `/api/reports/${id}/scorecard/calculate`,
+      json('POST', body),
+    ),
+    removeNav: (id: number) => request<void>(`/api/reports/${id}/scorecard/nav`, { method: 'DELETE' }),
   },
 }
 

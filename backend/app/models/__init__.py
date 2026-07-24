@@ -4,6 +4,7 @@ from app.models.manager import Manager
 from app.models.product import Product
 from app.models.report import DueDiligenceReport, ReportStatus, ReportTemplateType
 from app.models.generation_job import GenerationJobStatus, ReportGenerationJob
+from app.models.scorecard import ReportScorecard
 
 __all__ = [
     "Manager",
@@ -13,4 +14,5 @@ __all__ = [
     "ReportTemplateType",
     "GenerationJobStatus",
     "ReportGenerationJob",
+    "ReportScorecard",
 ]

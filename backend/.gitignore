@@ -7,3 +7,4 @@ __pycache__/
 generated_reports/*.docx
 generated_reports/*.json
 uploaded_images/
+uploaded_nav/

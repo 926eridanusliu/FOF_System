@@ -10,6 +10,7 @@ from validator.mapper import InputDataMapper
 from app import storage
 from app.models.report import DueDiligenceReport, ReportTemplateType
 from app.services.report_validator import manifest_image_fields
+from app.services.scorecard_document import append_scorecard
 
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent.parent
@@ -58,7 +59,10 @@ def _prepare_content(report: DueDiligenceReport, profile: str) -> dict[str, Any]
     return prepared
 
 
-def generate_document(report: DueDiligenceReport) -> GeneratedDocument:
+def generate_document(
+    report: DueDiligenceReport,
+    scorecard_snapshot: dict[str, Any] | None = None,
+) -> GeneratedDocument:
     config = CONFIGS[report.template_type]
     storage.GENERATED_DIR.mkdir(parents=True, exist_ok=True)
     filename = f"report-{report.id}-{uuid4().hex[:8]}.docx"
@@ -77,6 +81,8 @@ def generate_document(report: DueDiligenceReport) -> GeneratedDocument:
     ).validate(output_path, content)
     validation.to_json(output_path.with_name(f"{output_path.stem}_校验报告.json"))
     validation.to_docx(output_path.with_name(f"{output_path.stem}_校验报告.docx"))
+    if scorecard_snapshot:
+        append_scorecard(output_path, scorecard_snapshot)
 
     return GeneratedDocument(
         filename=filename,

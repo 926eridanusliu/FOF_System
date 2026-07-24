@@ -23,6 +23,7 @@ backend/
 ├── validator/                  # 第三阶段 DOCX 校验器
 ├── generated_reports/
 ├── uploaded_images/            # API 上传图片（运行时自动创建）
+├── uploaded_nav/               # API 上传净值文件（运行时自动创建）
 ├── tests/
 ├── requirements.txt
 ├── pytest.ini
@@ -133,6 +134,10 @@ pytest
 | GET | `/api/reports/{id}/generation-jobs/{job_id}` | 查询生成任务进度与下载地址 |
 | POST | `/api/reports/{id}/images/{field}` | 上传 PNG/JPEG 并写入图片书签 |
 | DELETE | `/api/reports/{id}/images/{field}` | 删除草稿中的已上传图片 |
+| GET | `/api/reports/{id}/scorecard` | 查询净值文件、评分输入及计算结果 |
+| POST | `/api/reports/{id}/scorecard/nav` | 上传并识别 `.xlsx/.csv` 净值文件 |
+| POST | `/api/reports/{id}/scorecard/calculate` | 计算并保存定量、定性和合规扣分 |
+| DELETE | `/api/reports/{id}/scorecard/nav` | 删除净值文件及已有评分结果 |
 | GET | `/api/files/{filename}` | 下载生成的 DOCX |
 | GET | `/api/files/images/{report_id}/{filename}` | 预览或下载已上传图片 |
 
@@ -206,3 +211,35 @@ queued → running → completed
 不会在生成途中互相混用。服务重启后会自动恢复未完成任务。默认每个服务实例同时
 处理两个任务，可通过 `REPORT_GENERATION_WORKERS` 调整。原同步 `/generate` 接口
 保留，供兼容已有调用方使用。
+
+## Admission scorecard
+
+报告编辑页“准入评分卡”支持上传 `.xlsx` 或 `.csv` 净值文件。文件至少需要：
+
+```text
+日期        累计净值
+2024-01-01  1.0000
+2024-01-08  1.0032
+```
+
+系统会识别常用中文/英文列名，也允许前端重新指定日期列、产品净值列和可选基准
+净值列。旧版 `.xls` 需要先另存为 `.xlsx`。解析失败时接口会返回具体的行号和原因，
+不会把无法识别的内容当作零值。
+
+计算口径：
+
+- 年化收益按实际起止日期，以 `365.25` 天复利年化；
+- 波动率使用周期收益率样本标准差，并依据净值日期间隔年化；
+- 夏普比率为 `(年化收益率 - 年化无风险利率) / 年化波动率`；
+- 最大回撤使用期间净值高水位计算；
+- 卡玛比率为 `年化收益率 / 最大回撤绝对值`；
+- 月度胜率使用各自然月末最后一个净值计算；
+- 近1年、近3/5年以及不足1年/3年的折扣规则，均来自
+  `副本开源证券私募产品准入打分卡-评分调整版.xlsx`。
+
+无风险利率由评分表单明确填写，默认显示 `0%`，可以修改；有明确基准时需要选择
+基准净值列，否则按评分卡中的无基准策略规则判定相对收益。定性项目使用结构化
+表单，不从自由文本中猜测人数、年限或评级。
+
+评分完成后，同步和异步报告生成都会将评分结果快照作为附录写入 Word 末尾。
+未计算评分卡的历史报告仍可按原流程生成，不会出现空白附录。

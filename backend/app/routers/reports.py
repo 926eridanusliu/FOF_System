@@ -15,6 +15,7 @@ from app.models.manager import Manager
 from app.models.product import Product
 from app.models.generation_job import GenerationJobStatus, ReportGenerationJob
 from app.models.report import DueDiligenceReport, ReportStatus
+from app.models.scorecard import ReportScorecard
 from app.schemas.generation_job import GenerationJobRead
 from app.schemas.report import (
     GenerateResponse,
@@ -27,6 +28,7 @@ from app.schemas.report import (
 from app.services.document_generator import generate_document
 from app.services.generation_queue import enqueue_generation
 from app.services.report_validator import manifest_image_fields, validate_report
+from app.services.scorecard import scorecard_snapshot
 
 
 router = APIRouter(prefix="/api/reports", tags=["Reports"])
@@ -170,8 +172,11 @@ def generate_report(report_id: int, db: Session = Depends(get_db)) -> GenerateRe
     )
     if not validation.valid:
         raise HTTPException(status_code=422, detail=validation.model_dump())
+    scorecard = db.scalar(
+        select(ReportScorecard).where(ReportScorecard.report_id == report_id)
+    )
     try:
-        generated = generate_document(report)
+        generated = generate_document(report, scorecard_snapshot(scorecard))
     except (OSError, ValueError, KeyError) as exc:
         raise HTTPException(status_code=500, detail=f"报告生成失败：{exc}") from exc
     report.generated_filename = generated.filename
@@ -213,10 +218,16 @@ def create_generation_job(
     if active is not None:
         return active
 
+    content_snapshot = dict(report.content or {})
+    frozen_scorecard = scorecard_snapshot(
+        db.scalar(select(ReportScorecard).where(ReportScorecard.report_id == report_id))
+    )
+    if frozen_scorecard:
+        content_snapshot["__scorecard__"] = frozen_scorecard
     job = ReportGenerationJob(
         report_id=report.id,
         template_type=report.template_type,
-        content_snapshot=dict(report.content or {}),
+        content_snapshot=content_snapshot,
         status=GenerationJobStatus.QUEUED,
     )
     db.add(job)
