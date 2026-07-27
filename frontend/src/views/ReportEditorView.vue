@@ -5,7 +5,7 @@ import { Check, DocumentChecked, View } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { api, apiMessage } from '../api'
 import type { Manager, ManifestField, Product, Report, ValidationResult } from '../types'
-import { fieldSection, getFields, statusLabel, strategyOptions, templateLabel } from '../utils/report'
+import { cloneReportContent, fieldSection, getFields, statusLabel, strategyOptions, templateLabel } from '../utils/report'
 import FieldGroup from '../components/FieldGroup.vue'
 import StrategyEditor from '../components/StrategyEditor.vue'
 import TableEditor from '../components/TableEditor.vue'
@@ -66,7 +66,7 @@ async function save(silent = false): Promise<boolean> {
     const product = products.value.find((item) => item.id === report.value!.product_id)
     if (product) content.cover_product_name = product.name
     const updated = await api.reports.update(reportId, {
-      title: title.value.trim(), content: structuredClone(content), conclusion: conclusion.value || null, risk_items: riskItems.value.filter(Boolean),
+      title: title.value.trim(), content: cloneReportContent(content), conclusion: conclusion.value || null, risk_items: riskItems.value.filter(Boolean),
     })
     report.value = { ...updated }; dirty.value = false; lastSavedAt.value = new Date()
     if (!silent) ElMessage.success('草稿已保存')
@@ -115,7 +115,7 @@ async function syncImage(field: string, removed: boolean) {
     const server = await api.reports.get(reportId)
     hydrating.value = true
     if (removed) delete content[field]; else content[field] = structuredClone(server.content[field])
-    await nextTick(); hydrating.value = false; dirty.value = false; report.value = { ...server, content: structuredClone(content) }
+    await nextTick(); hydrating.value = false; dirty.value = false; report.value = { ...server, content: cloneReportContent(content) }
   } catch (error) { ElMessage.error(apiMessage(error)) }
 }
 

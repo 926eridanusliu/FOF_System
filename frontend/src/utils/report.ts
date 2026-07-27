@@ -1,5 +1,6 @@
 import privateManifestData from '../data/private_fund_manifest.json'
 import licensedManifestData from '../data/licensed_institution_manifest.json'
+import { toRaw } from 'vue'
 import type { Manifest, ManifestField, ReportStatus, TemplateType } from '../types'
 
 const manifests: Record<TemplateType, Manifest> = {
@@ -9,6 +10,10 @@ const manifests: Record<TemplateType, Manifest> = {
 
 export const getManifest = (type: TemplateType) => manifests[type]
 export const getFields = (type: TemplateType) => getManifest(type).bookmarks
+
+export function cloneReportContent<T extends Record<string, unknown>>(content: T): T {
+  return structuredClone(toRaw(content))
+}
 
 export function fieldSection(field: ManifestField): number | undefined {
   const standaloneImages: Record<string, number> = {

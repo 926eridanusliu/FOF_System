@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { fieldSection, getFields, strategyOptions } from './report'
+import { reactive } from 'vue'
+import { cloneReportContent, fieldSection, getFields, strategyOptions } from './report'
 
 describe('report manifest helpers', () => {
   it('uses the full backend manifest field sets', () => {
@@ -19,5 +20,14 @@ describe('report manifest helpers', () => {
       'cover_strategy_futures_quant_trend',
       'cover_strategy_futures_discretionary',
     ])
+  })
+
+  it('converts reactive report content into cloneable plain data', () => {
+    const content = reactive({ investigator: '测试人员', nested: { enabled: true } })
+    const cloned = cloneReportContent(content)
+
+    expect(cloned).toEqual({ investigator: '测试人员', nested: { enabled: true } })
+    expect(cloned).not.toBe(content)
+    expect(() => structuredClone(cloned)).not.toThrow()
   })
 })
