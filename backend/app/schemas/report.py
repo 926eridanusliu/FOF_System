@@ -10,6 +10,7 @@ class ReportBase(BaseModel):
     title: str = Field(min_length=1, max_length=255)
     manager_id: int = Field(gt=0)
     product_id: int = Field(gt=0)
+    product_ids: list[int] = Field(default_factory=list)
     template_type: ReportTemplateType = ReportTemplateType.PRIVATE_FUND
     content: dict[str, Any] = Field(default_factory=dict)
     conclusion: str | None = None
@@ -24,6 +25,7 @@ class ReportUpdate(BaseModel):
     title: str | None = Field(default=None, min_length=1, max_length=255)
     manager_id: int | None = Field(default=None, gt=0)
     product_id: int | None = Field(default=None, gt=0)
+    product_ids: list[int] | None = None
     template_type: ReportTemplateType | None = None
     content: dict[str, Any] | None = None
     conclusion: str | None = None
@@ -40,6 +42,7 @@ class ReportRead(ReportBase):
     archived_at: datetime | None
     created_at: datetime
     updated_at: datetime
+    auto_strategy_keys: list[str] = Field(default_factory=list)
 
 
 class ValidationIssue(BaseModel):
@@ -77,3 +80,18 @@ class ImageUploadResponse(BaseModel):
     width_px: int
     height_px: int
     download_url: str
+
+
+class JsonImportConflict(BaseModel):
+    field: str
+    current: Any
+    incoming: Any
+
+
+class JsonImportResult(BaseModel):
+    source_format: str
+    recognized_count: int
+    ignored_fields: list[str] = Field(default_factory=list)
+    conflicts: list[JsonImportConflict] = Field(default_factory=list)
+    imported_content: dict[str, Any] = Field(default_factory=dict)
+    applied: bool = False

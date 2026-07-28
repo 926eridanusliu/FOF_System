@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import TYPE_CHECKING, Any
 
-from sqlalchemy import JSON, DateTime, Enum as SqlEnum, ForeignKey, String, Text
+from sqlalchemy import JSON, DateTime, Enum as SqlEnum, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -60,3 +60,37 @@ class DueDiligenceReport(Base):
 
     manager: Mapped[Manager] = relationship(back_populates="reports")
     product: Mapped[Product] = relationship(back_populates="reports")
+    report_products: Mapped[list[ReportProduct]] = relationship(
+        back_populates="report",
+        cascade="all, delete-orphan",
+        order_by="ReportProduct.ordinal",
+    )
+
+    @property
+    def product_ids(self) -> list[int]:
+        ids = [link.product_id for link in self.report_products]
+        return ids or [self.product_id]
+
+    @property
+    def auto_strategy_keys(self) -> list[str]:
+        keys: list[str] = []
+        for link in self.report_products:
+            for record in link.product.strategy_records:
+                if record.strategy_key not in keys:
+                    keys.append(record.strategy_key)
+        return keys
+
+
+class ReportProduct(Base):
+    __tablename__ = "report_products"
+
+    report_id: Mapped[int] = mapped_column(
+        ForeignKey("reports.id", ondelete="CASCADE"), primary_key=True
+    )
+    product_id: Mapped[int] = mapped_column(
+        ForeignKey("products.id", ondelete="RESTRICT"), primary_key=True
+    )
+    ordinal: Mapped[int] = mapped_column(Integer, default=0)
+
+    report: Mapped[DueDiligenceReport] = relationship(back_populates="report_products")
+    product: Mapped[Product] = relationship(back_populates="report_links")

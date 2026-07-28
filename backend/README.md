@@ -111,7 +111,7 @@ pytest
 
 测试覆盖健康检查、三类对象创建与查询、两类模板生成、文件下载、报告校验、
 `draft → submitted → archived` 状态流转、不可变版本快照、字段对比、附件回滚及
-关联数据删除保护。
+关联数据删除保护，以及多产品策略并集、JSON 导入和外部填写令牌。
 
 ## API
 
@@ -152,6 +152,10 @@ pytest
 | GET | `/api/reports/{id}/generation-jobs/{job_id}` | 查询生成任务进度与下载地址 |
 | POST | `/api/reports/{id}/images/{field}` | 上传 PNG/JPEG 并写入图片书签 |
 | DELETE | `/api/reports/{id}/images/{field}` | 删除草稿中的已上传图片 |
+| POST | `/api/reports/{id}/import-json` | 预览或应用 JSON 导入 |
+| POST | `/api/reports/{id}/invitations` | 生成带有效期的管理人填写链接 |
+| GET | `/api/reports/{id}/invitations` | 查询填写链接状态 |
+| DELETE | `/api/reports/{id}/invitations/{invitation_id}` | 撤销填写链接 |
 | GET | `/api/reports/{id}/scorecard` | 查询净值文件、评分输入及计算结果 |
 | POST | `/api/reports/{id}/scorecard/nav` | 上传并识别 `.xlsx/.csv` 净值文件 |
 | POST | `/api/reports/{id}/scorecard/calculate` | 计算并保存定量、定性和合规扣分 |
@@ -165,6 +169,16 @@ pytest
 | GET | `/api/notifications/config` | 查询非敏感的飞书配置完整度 |
 | GET | `/api/files/{filename}` | 下载生成的 DOCX |
 | GET | `/api/files/images/{report_id}/{filename}` | 预览或下载已上传图片 |
+
+公开填写接口仅凭随机令牌访问指定报告，不提供管理人、产品或其他报告列表：
+
+- `GET/PUT /api/public/fill/{token}`：读取及自动保存；
+- `POST /api/public/fill/{token}/submit`：提交并锁定链接；
+- `POST/DELETE/GET /api/public/fill/{token}/images/{field}`：管理该报告图片。
+
+数据库只保存令牌的 SHA-256 摘要，原始链接只在创建时返回一次。链接最长30天，
+可由内部人员提前撤销。生产环境还必须使用 HTTPS，并由公司决定内部工作台的登录、
+VPN或Nginx访问控制；邀请令牌不能替代内部人员身份认证。
 
 报告的 `template_type` 可选：
 

@@ -7,7 +7,7 @@ SQLAlchemy 和 Pydantic，并通过既有 Word 书签模板生成附件 1-1/附�
 
 ```text
 backend/   FastAPI API、数据库模型、异步生成队列、DOCX 引擎与测试
-frontend/  Vue 3 管理人、产品、报告编辑及 Word 在线预览界面
+frontend/  Vue 3 管理人、产品、外部资料收集、报告编辑及 Word 在线预览界面
 deployment/ Windows/Nginx 启动、构建、健康检查和备份模板
 docs/      用户、管理员、飞书接入、部署、演示和交接文档
 ```
@@ -34,6 +34,10 @@ npm run dev
 
 打开 <http://127.0.0.1:5173>。Swagger 文档位于
 <http://127.0.0.1:8000/docs>。
+
+系统支持为产品配置策略、一份报告关联多只产品、预览后导入 JSON，以及生成
+限定报告、带有效期并可撤销的管理人填写链接。生产环境必须在
+`backend/.env` 设置对方能够访问的 `PUBLIC_FRONTEND_URL`。
 
 更完整的配置、接口与运行说明见 `backend/README.md` 和 `frontend/README.md`。
 

@@ -5,11 +5,12 @@ import { Collection, Document, OfficeBuilding } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const isReportWorkspace = computed(() => route.path.startsWith('/reports/'))
+const isPublicFill = computed(() => route.path.startsWith('/fill/'))
 </script>
 
 <template>
-  <div class="app-shell" :class="{ 'is-report-workspace': isReportWorkspace }">
-    <aside class="app-sidebar">
+  <div class="app-shell" :class="{ 'is-report-workspace': isReportWorkspace, 'is-public-fill': isPublicFill }">
+    <aside v-if="!isPublicFill" class="app-sidebar">
       <router-link class="brand" to="/managers" aria-label="FOF 尽调工作台首页">
         <span class="brand-mark">F</span>
         <span><b>FOF 尽调</b><small>REPORT DESK</small></span>
@@ -28,7 +29,7 @@ const isReportWorkspace = computed(() => route.path.startsWith('/reports/'))
       </div>
     </aside>
     <main class="app-main">
-      <header class="app-topbar">
+      <header v-if="!isPublicFill" class="app-topbar">
         <div>
           <span class="topbar-kicker">资产管理业务</span>
           <strong>{{ route.meta.title }}</strong>

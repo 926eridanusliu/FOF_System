@@ -30,4 +30,25 @@ describe('report manifest helpers', () => {
     expect(cloned).not.toBe(content)
     expect(() => structuredClone(cloned)).not.toThrow()
   })
+
+  it('opens the quantitative questions for market neutral and T0', () => {
+    const branches = Object.fromEntries(strategyOptions.map(([key, , branch]) => [key, branch]))
+    expect(branches.cover_strategy_market_neutral).toBe('quant')
+    expect(branches.cover_strategy_t0).toBe('quant')
+  })
+
+  it('supports the union of several product strategy branches', () => {
+    const selected = new Set([
+      'cover_strategy_stock_quant',
+      'cover_strategy_market_neutral',
+      'cover_strategy_futures_quant_trend',
+      'cover_strategy_futures_options_arbitrage',
+    ])
+    const active = new Set(
+      strategyOptions
+        .filter(([key, , branch]) => selected.has(key) && Boolean(branch))
+        .map(([, , branch]) => branch),
+    )
+    expect(active).toEqual(new Set(['quant', 'cta', 'option']))
+  })
 })

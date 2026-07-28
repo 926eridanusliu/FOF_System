@@ -53,7 +53,7 @@ def _has_selected_strategy(content: dict[str, Any]) -> bool:
 def validate_report(
     report: DueDiligenceReport,
     manager: Manager | None,
-    product: Product | None,
+    product: Product | list[Product] | None,
 ) -> ValidationResult:
     errors: list[ValidationIssue] = []
     warnings: list[ValidationIssue] = []
@@ -61,9 +61,10 @@ def validate_report(
 
     if manager is None:
         errors.append(ValidationIssue(field="manager_id", message="关联的管理人不存在"))
-    if product is None:
+    products = product if isinstance(product, list) else ([product] if product else [])
+    if not products:
         errors.append(ValidationIssue(field="product_id", message="关联的产品不存在"))
-    elif product.manager_id != report.manager_id:
+    elif any(item.manager_id != report.manager_id for item in products):
         errors.append(
             ValidationIssue(field="product_id", message="产品不属于报告所选管理人")
         )
@@ -92,11 +93,8 @@ def validate_report(
                     message="表格中的管理人名称与关联管理人不一致",
                 )
             )
-    if product is not None and content.get("cover_product_name") not in (
-        None,
-        "",
-        product.name,
-    ):
+    expected_product_name = "、".join(item.name for item in products)
+    if products and content.get("cover_product_name") not in (None, "", expected_product_name):
         errors.append(
             ValidationIssue(
                 field="content.cover_product_name",

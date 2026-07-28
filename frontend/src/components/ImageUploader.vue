@@ -5,10 +5,15 @@ import { api, apiMessage } from '../api'
 import type { ManifestField } from '../types'
 import { imageUrl } from '../utils/report'
 
-const props = defineProps<{ reportId: number; fields: ManifestField[]; content: Record<string, any>; disabled?: boolean }>()
+const props = defineProps<{ reportId?: number; publicToken?: string; fields: ManifestField[]; content: Record<string, any>; disabled?: boolean }>()
 const emit = defineEmits<{ changed: [field: string, removed: boolean] }>()
 const working = ref<string>()
-const previews = computed(() => Object.fromEntries(props.fields.map((field) => [field.bookmark, imageUrl(props.reportId, props.content[field.bookmark])])))
+const previews = computed(() => Object.fromEntries(props.fields.map((field) => [
+  field.bookmark,
+  props.publicToken && props.content[field.bookmark]
+    ? `/api/public/fill/${encodeURIComponent(props.publicToken)}/images/${encodeURIComponent(field.bookmark)}`
+    : props.reportId ? imageUrl(props.reportId, props.content[field.bookmark]) : undefined,
+])))
 
 async function upload(field: string, event: Event) {
   const input = event.target as HTMLInputElement
@@ -16,14 +21,24 @@ async function upload(field: string, event: Event) {
   if (!file) return
   if (!['image/png', 'image/jpeg'].includes(file.type)) { ElMessage.warning('请选择 PNG 或 JPEG 图片'); input.value = ''; return }
   working.value = field
-  try { await api.reports.uploadImage(props.reportId, field, file); ElMessage.success('图片已上传并写入报告'); emit('changed', field, false) }
+  try {
+    if (props.publicToken) await api.publicFill.uploadImage(props.publicToken, field, file)
+    else if (props.reportId) await api.reports.uploadImage(props.reportId, field, file)
+    else throw new Error('缺少图片上传目标')
+    ElMessage.success('图片已上传并写入报告'); emit('changed', field, false)
+  }
   catch (error) { ElMessage.error(apiMessage(error)) }
   finally { working.value = undefined; input.value = '' }
 }
 
 async function remove(field: string) {
   working.value = field
-  try { await api.reports.removeImage(props.reportId, field); ElMessage.success('图片已移除'); emit('changed', field, true) }
+  try {
+    if (props.publicToken) await api.publicFill.removeImage(props.publicToken, field)
+    else if (props.reportId) await api.reports.removeImage(props.reportId, field)
+    else throw new Error('缺少图片上传目标')
+    ElMessage.success('图片已移除'); emit('changed', field, true)
+  }
   catch (error) { ElMessage.error(apiMessage(error)) } finally { working.value = undefined }
 }
 </script>

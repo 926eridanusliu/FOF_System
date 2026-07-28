@@ -17,6 +17,7 @@ export interface Product {
   name: string
   product_type: string | null
   established_date: string | null
+  strategy_keys: string[]
   created_at: string
   updated_at: string
 }
@@ -26,6 +27,8 @@ export interface Report {
   title: string
   manager_id: number
   product_id: number
+  product_ids: number[]
+  auto_strategy_keys: string[]
   template_type: TemplateType
   content: Record<string, unknown>
   conclusion: string | null
@@ -199,4 +202,43 @@ export interface ReportVersionComparison {
   to_version: number
   change_count: number
   changes: VersionDiffItem[]
+}
+
+export interface JsonImportConflict {
+  field: string
+  current: unknown
+  incoming: unknown
+}
+
+export interface JsonImportResult {
+  source_format: string
+  recognized_count: number
+  ignored_fields: string[]
+  conflicts: JsonImportConflict[]
+  imported_content: Record<string, unknown>
+  applied: boolean
+}
+
+export interface ReportInvitation {
+  id: number
+  report_id: number
+  expires_at: string
+  revoked_at: string | null
+  submitted_at: string | null
+  created_at: string
+  last_saved_at: string | null
+  fill_url: string | null
+}
+
+export interface PublicReport {
+  title: string
+  manager_name: string
+  product_names: string[]
+  template_type: TemplateType
+  content: Record<string, unknown>
+  conclusion: string | null
+  risk_items: string[]
+  expires_at: string
+  submitted_at: string | null
+  auto_strategy_keys: string[]
 }

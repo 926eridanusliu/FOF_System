@@ -13,6 +13,7 @@ from app.routers.report_versions import router as report_versions_router
 from app.routers.scorecards import router as scorecards_router
 from app.services.generation_queue import recover_generation_jobs
 from app.routers.notifications import router as notifications_router
+from app.routers.invitations import router as invitations_router
 from app.services.feishu_notifications import recover_notifications
 
 
@@ -54,6 +55,7 @@ app.include_router(reports_router)
 app.include_router(report_versions_router)
 app.include_router(scorecards_router)
 app.include_router(notifications_router)
+app.include_router(invitations_router)
 app.include_router(file_router)
 
 
