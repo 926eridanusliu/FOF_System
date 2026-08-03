@@ -10,7 +10,10 @@ from sqlalchemy.orm import Session
 
 from app.models.generation_job import GenerationJobStatus, ReportGenerationJob
 from app.models.report import DueDiligenceReport
+from app.models.manager import Manager
+from app.models.product import Product
 from app.services.document_generator import generate_document
+from app.services.feishu_notifications import create_notification, enqueue_notification
 
 
 WORKER_COUNT = max(1, int(os.getenv("REPORT_GENERATION_WORKERS", "2")))
@@ -35,12 +38,17 @@ def _run_generation_job(job_id: int, bind: Engine) -> None:
         db.commit()
 
         try:
+            snapshot_content = dict(job.content_snapshot or {})
+            scorecard_snapshot = snapshot_content.pop("__scorecard__", None)
             snapshot = SimpleNamespace(
                 id=job.report_id,
                 template_type=job.template_type,
-                content=dict(job.content_snapshot or {}),
+                content=snapshot_content,
             )
-            generated = generate_document(snapshot)  # type: ignore[arg-type]
+            generated = generate_document(  # type: ignore[arg-type]
+                snapshot,
+                scorecard_snapshot=scorecard_snapshot,
+            )
         except Exception as exc:  # Worker boundary: persist any generator failure for polling clients.
             db.rollback()
             failed = db.get(ReportGenerationJob, job_id)
@@ -53,6 +61,7 @@ def _run_generation_job(job_id: int, bind: Engine) -> None:
 
         completed = db.get(ReportGenerationJob, job_id)
         report = db.get(DueDiligenceReport, job.report_id)
+        notification_id: int | None = None
         if completed is None:
             return
         completed.status = GenerationJobStatus.COMPLETED
@@ -61,7 +70,21 @@ def _run_generation_job(job_id: int, bind: Engine) -> None:
         completed.finished_at = _now()
         if report is not None:
             report.generated_filename = generated.filename
+            manager = db.get(Manager, report.manager_id)
+            product = db.get(Product, report.product_id)
+            if manager is not None and product is not None:
+                notification = create_notification(
+                    db,
+                    report,
+                    manager,
+                    product,
+                    generated.filename,
+                    generation_job_id=job.id,
+                )
+                notification_id = notification.id
         db.commit()
+        if notification_id is not None:
+            enqueue_notification(notification_id, bind)
 
 
 def enqueue_generation(job_id: int, bind: Engine) -> None:

@@ -9,7 +9,13 @@ from app import models  # noqa: F401 - registers tables with SQLAlchemy metadata
 from app.routers.managers import router as managers_router
 from app.routers.products import router as products_router
 from app.routers.reports import file_router, router as reports_router
+from app.routers.report_versions import router as report_versions_router
+from app.routers.scorecards import router as scorecards_router
 from app.services.generation_queue import recover_generation_jobs
+from app.routers.notifications import router as notifications_router
+from app.routers.invitations import router as invitations_router
+from app.routers.deletions import router as deletions_router
+from app.services.feishu_notifications import recover_notifications
 
 
 @asynccontextmanager
@@ -17,13 +23,14 @@ async def lifespan(_: FastAPI):
     """Initialize database tables when the application starts."""
     Base.metadata.create_all(bind=engine)
     recover_generation_jobs(engine)
+    recover_notifications(engine)
     yield
 
 
 app = FastAPI(
     title="FOF Due Diligence Report Service",
     description="Backend service for managing and generating FOF due diligence reports.",
-    version="0.1.0",
+    version="0.4.0",
     lifespan=lifespan,
 )
 
@@ -46,6 +53,11 @@ app.add_middleware(
 app.include_router(managers_router)
 app.include_router(products_router)
 app.include_router(reports_router)
+app.include_router(report_versions_router)
+app.include_router(scorecards_router)
+app.include_router(notifications_router)
+app.include_router(invitations_router)
+app.include_router(deletions_router)
 app.include_router(file_router)
 
 

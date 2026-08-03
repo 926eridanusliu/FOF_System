@@ -1,12 +1,14 @@
 from datetime import datetime, timezone
+import json
 from pathlib import Path
 from uuid import uuid4
 
 from docx.image.exceptions import UnrecognizedImageError
 from docx.image.image import Image as DocxImage
-from fastapi import APIRouter, Body, Depends, Header, HTTPException, Query, Response, status
+from fastapi import APIRouter, Body, Depends, Header, HTTPException, Query, Request, Response, status
 from fastapi.responses import FileResponse
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app import storage
@@ -14,24 +16,40 @@ from app.database import get_db
 from app.models.manager import Manager
 from app.models.product import Product
 from app.models.generation_job import GenerationJobStatus, ReportGenerationJob
-from app.models.report import DueDiligenceReport, ReportStatus
+from app.models.report import DueDiligenceReport, ReportProduct, ReportStatus
+from app.models.report_version import ReportVersion
+from app.models.scorecard import ReportScorecard
 from app.schemas.generation_job import GenerationJobRead
+from app.schemas.deletion import DeletionRequest
 from app.schemas.report import (
     GenerateResponse,
     ImageUploadResponse,
+    JsonImportConflict,
+    JsonImportResult,
     ReportCreate,
     ReportRead,
     ReportUpdate,
     ValidationResult,
 )
 from app.services.document_generator import generate_document
+from app.services.document_generator import CONFIGS, FIELD_PREFIXES
 from app.services.generation_queue import enqueue_generation
 from app.services.report_validator import manifest_image_fields, validate_report
+from app.services.report_versions import (
+    create_report_version,
+    remove_uncommitted_version_files,
+)
+from app.services.scorecard import scorecard_snapshot
+from app.services.feishu_notifications import create_notification, enqueue_notification
+from app.services.report_validator import manifest_fields
+from validator.mapper import InputDataMapper
+from app.services.deletions import add_deletion, is_deleted, visible_entity
 
 
 router = APIRouter(prefix="/api/reports", tags=["Reports"])
 file_router = APIRouter(prefix="/api/files", tags=["Files"])
 MAX_IMAGE_BYTES = 10 * 1024 * 1024
+MAX_JSON_BYTES = 5 * 1024 * 1024
 LEGACY_IMAGE_FIELDS = {
     "image_org_structure": "qa_section1_q002_answer",
     "image_performance_comparison": "qa_section2_q119_answer",
@@ -40,27 +58,73 @@ LEGACY_IMAGE_FIELDS = {
 
 def _get_report(report_id: int, db: Session) -> DueDiligenceReport:
     report = db.get(DueDiligenceReport, report_id)
-    if report is None:
+    if (
+        report is None
+        or is_deleted("report", report_id, db)
+        or is_deleted("manager", report.manager_id, db)
+    ):
         raise HTTPException(status_code=404, detail="尽调报告不存在")
     return report
 
 
-def _ensure_relations(manager_id: int, product_id: int, db: Session) -> tuple[Manager, Product]:
+def _ensure_relations(manager_id: int, product_ids: list[int], db: Session) -> tuple[Manager, list[Product]]:
     manager = db.get(Manager, manager_id)
-    if manager is None:
+    if manager is None or is_deleted("manager", manager_id, db):
         raise HTTPException(status_code=404, detail="管理人不存在")
-    product = db.get(Product, product_id)
-    if product is None:
-        raise HTTPException(status_code=404, detail="产品不存在")
-    if product.manager_id != manager_id:
-        raise HTTPException(status_code=422, detail="产品不属于所选管理人")
-    return manager, product
+    if not product_ids:
+        raise HTTPException(status_code=422, detail="至少选择一只产品")
+    products: list[Product] = []
+    for product_id in dict.fromkeys(product_ids):
+        product = db.get(Product, product_id)
+        if product is None:
+            raise HTTPException(status_code=404, detail=f"产品 #{product_id} 不存在")
+        if product.manager_id != manager_id:
+            raise HTTPException(status_code=422, detail="产品不属于所选管理人")
+        products.append(product)
+    return manager, products
+
+
+def _set_report_products(
+    report: DueDiligenceReport, products: list[Product]
+) -> None:
+    report.report_products.clear()
+    report.report_products.extend(
+        ReportProduct(product=product, ordinal=index)
+        for index, product in enumerate(products)
+    )
+    report.product_id = products[0].id
+
+
+def _report_products(report: DueDiligenceReport, db: Session) -> list[Product]:
+    products = [link.product for link in report.report_products]
+    if not products:
+        primary = db.get(Product, report.product_id)
+        return [primary] if primary else []
+    return products
+
+
+def _sync_identity_and_strategies(
+    report: DueDiligenceReport, manager: Manager, products: list[Product]
+) -> None:
+    content = dict(report.content or {})
+    content["cover_manager_name"] = manager.name
+    content["table_1_row0_col1"] = manager.name
+    content["cover_product_name"] = "、".join(product.name for product in products)
+    for product in products:
+        for strategy_key in product.strategy_keys:
+            content[strategy_key] = True
+    report.content = content
 
 
 @router.post("", response_model=ReportRead, status_code=status.HTTP_201_CREATED)
 def create_report(payload: ReportCreate, db: Session = Depends(get_db)) -> DueDiligenceReport:
-    _ensure_relations(payload.manager_id, payload.product_id, db)
-    report = DueDiligenceReport(**payload.model_dump(), status=ReportStatus.DRAFT)
+    product_ids = payload.product_ids or [payload.product_id]
+    manager, products = _ensure_relations(payload.manager_id, product_ids, db)
+    values = payload.model_dump(exclude={"product_ids"})
+    values["product_id"] = products[0].id
+    report = DueDiligenceReport(**values, status=ReportStatus.DRAFT)
+    _set_report_products(report, products)
+    _sync_identity_and_strategies(report, manager, products)
     db.add(report)
     db.commit()
     db.refresh(report)
@@ -76,13 +140,19 @@ def list_reports(
     limit: int = Query(100, ge=1, le=200),
     db: Session = Depends(get_db),
 ) -> list[DueDiligenceReport]:
-    statement = select(DueDiligenceReport)
+    statement = select(DueDiligenceReport).where(
+        visible_entity("report", DueDiligenceReport.id),
+        visible_entity("manager", DueDiligenceReport.manager_id),
+    )
     if report_status is not None:
         statement = statement.where(DueDiligenceReport.status == report_status)
     if manager_id is not None:
         statement = statement.where(DueDiligenceReport.manager_id == manager_id)
     if product_id is not None:
-        statement = statement.where(DueDiligenceReport.product_id == product_id)
+        statement = statement.where(
+            DueDiligenceReport.report_products.any(ReportProduct.product_id == product_id)
+            | (DueDiligenceReport.product_id == product_id)
+        )
     return list(db.scalars(statement.offset(skip).limit(limit)))
 
 
@@ -101,25 +171,132 @@ def update_report(
     if report.status != ReportStatus.DRAFT:
         raise HTTPException(status_code=409, detail="只有草稿报告可以编辑")
     changes = payload.model_dump(exclude_unset=True)
-    for field in ("title", "manager_id", "product_id", "template_type", "content"):
+    for field in ("title", "manager_id", "product_id", "product_ids", "template_type", "content"):
         if field in changes and changes[field] is None:
             raise HTTPException(status_code=422, detail=f"{field} 不能为 null")
     manager_id = changes.get("manager_id", report.manager_id)
-    product_id = changes.get("product_id", report.product_id)
-    _ensure_relations(manager_id, product_id, db)
+    product_ids = changes.pop("product_ids", None)
+    if product_ids is None:
+        product_ids = report.product_ids
+        if "product_id" in changes and changes["product_id"] not in product_ids:
+            product_ids = [changes["product_id"], *product_ids]
+    manager, products = _ensure_relations(manager_id, product_ids, db)
     for field, value in changes.items():
         setattr(report, field, value)
+    _set_report_products(report, products)
+    _sync_identity_and_strategies(report, manager, products)
     db.commit()
     db.refresh(report)
     return report
 
 
-@router.delete("/{report_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_report(report_id: int, db: Session = Depends(get_db)) -> Response:
+@router.post(
+    "/{report_id}/import-json",
+    response_model=JsonImportResult,
+    summary="Preview or apply JSON data to a draft report",
+)
+async def import_report_json(
+    report_id: int,
+    request: Request,
+    apply: bool = Query(default=False),
+    db: Session = Depends(get_db),
+) -> JsonImportResult:
     report = _get_report(report_id, db)
     if report.status != ReportStatus.DRAFT:
-        raise HTTPException(status_code=409, detail="只有草稿报告可以删除")
-    db.delete(report)
+        raise HTTPException(status_code=409, detail="只有草稿报告可以导入 JSON")
+    payload = await request.body()
+    if not payload:
+        raise HTTPException(status_code=422, detail="JSON 文件不能为空")
+    if len(payload) > MAX_JSON_BYTES:
+        raise HTTPException(status_code=413, detail="JSON 文件不能超过 5 MB")
+    try:
+        parsed = json.loads(payload.decode("utf-8-sig"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise HTTPException(status_code=422, detail=f"JSON 格式错误：{exc}") from exc
+    if not isinstance(parsed, dict):
+        raise HTTPException(status_code=422, detail="JSON 顶层必须是对象")
+
+    source_format = "report-content"
+    candidate: dict = parsed
+    if isinstance(parsed.get("content"), dict):
+        candidate = parsed["content"]
+        source_format = "report-export"
+    elif not any(str(key).startswith(FIELD_PREFIXES) for key in parsed):
+        source_format = "legacy-questionnaire"
+        profile = str(CONFIGS[report.template_type]["profile"])
+        candidate = InputDataMapper().map(parsed, profile)
+
+    allowed = manifest_fields(report.template_type)
+    imported: dict = {}
+    ignored: list[str] = []
+    for raw_key, value in candidate.items():
+        key = str(raw_key)
+        if key not in allowed:
+            ignored.append(key)
+            continue
+        if key in manifest_image_fields(report.template_type):
+            ignored.append(key)
+            continue
+        if key.startswith("cover_strategy_") and key != "cover_strategy_other_text":
+            value = value in (True, 1, "1", "true", "True", "是", "☑")
+        imported[key] = value
+
+    current = dict(report.content or {})
+    conflicts = [
+        JsonImportConflict(field=key, current=current[key], incoming=value)
+        for key, value in imported.items()
+        if key in current
+        and current[key] not in (None, "", False, [], {})
+        and current[key] != value
+    ]
+    if apply:
+        report.content = {**current, **imported}
+        manager = db.get(Manager, report.manager_id)
+        products = _report_products(report, db)
+        if manager is None or not products:
+            raise HTTPException(status_code=409, detail="报告关联的管理人或产品不存在")
+        _sync_identity_and_strategies(report, manager, products)
+        db.commit()
+        db.refresh(report)
+
+    return JsonImportResult(
+        source_format=source_format,
+        recognized_count=len(imported),
+        ignored_fields=sorted(ignored),
+        conflicts=conflicts,
+        imported_content=imported,
+        applied=apply,
+    )
+
+
+@router.delete("/{report_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_report(
+    report_id: int,
+    payload: DeletionRequest | None = Body(default=None),
+    db: Session = Depends(get_db),
+) -> Response:
+    report = _get_report(report_id, db)
+    has_versions = bool(db.scalar(
+        select(ReportVersion.id).where(ReportVersion.report_id == report_id).limit(1)
+    ))
+    if (report.status != ReportStatus.DRAFT or has_versions) and payload is None:
+        raise HTTPException(status_code=409, detail="正式报告或已有历史版本的报告，删除时必须填写原因")
+    add_deletion(
+        entity_type="report",
+        entity_id=report.id,
+        display_name=report.title,
+        reason=payload.reason if payload else "删除草稿报告",
+        snapshot={
+            "title": report.title,
+            "manager_id": report.manager_id,
+            "product_ids": report.product_ids,
+            "template_type": report.template_type.value,
+            "status": report.status.value,
+            "has_versions": has_versions,
+            "generated_filename": report.generated_filename,
+        },
+        db=db,
+    )
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
@@ -130,7 +307,7 @@ def validate_report_endpoint(
     db: Session = Depends(get_db),
 ) -> ValidationResult:
     report = _get_report(report_id, db)
-    return validate_report(report, db.get(Manager, report.manager_id), db.get(Product, report.product_id))
+    return validate_report(report, db.get(Manager, report.manager_id), _report_products(report, db))
 
 
 @router.post("/{report_id}/submit", response_model=ReportRead)
@@ -138,14 +315,36 @@ def submit_report(report_id: int, db: Session = Depends(get_db)) -> DueDiligence
     report = _get_report(report_id, db)
     if report.status != ReportStatus.DRAFT:
         raise HTTPException(status_code=409, detail="只有草稿报告可以提交")
-    validation = validate_report(
-        report, db.get(Manager, report.manager_id), db.get(Product, report.product_id)
-    )
+    products = _report_products(report, db)
+    validation = validate_report(report, db.get(Manager, report.manager_id), products)
     if not validation.valid:
         raise HTTPException(status_code=422, detail=validation.model_dump())
+    manager = db.get(Manager, report.manager_id)
+    product = products[0] if products else None
+    if manager is None or product is None:
+        raise HTTPException(status_code=409, detail="报告关联的管理人或产品不存在")
+    submitted_at = datetime.now(timezone.utc)
     report.status = ReportStatus.SUBMITTED
-    report.submitted_at = datetime.now(timezone.utc)
-    db.commit()
+    report.submitted_at = submitted_at
+    version_dir: Path | None = None
+    try:
+        version, version_dir = create_report_version(
+            report,
+            manager,
+            product,
+            db.scalar(
+                select(ReportScorecard).where(ReportScorecard.report_id == report_id)
+            ),
+            submitted_at,
+            db,
+        )
+        db.add(version)
+        db.commit()
+    except (OSError, ValueError, IntegrityError) as exc:
+        db.rollback()
+        if version_dir is not None:
+            remove_uncommitted_version_files(version_dir)
+        raise HTTPException(status_code=409, detail=f"创建历史版本失败：{exc}") from exc
     db.refresh(report)
     return report
 
@@ -165,17 +364,31 @@ def archive_report(report_id: int, db: Session = Depends(get_db)) -> DueDiligenc
 @router.post("/{report_id}/generate", response_model=GenerateResponse)
 def generate_report(report_id: int, db: Session = Depends(get_db)) -> GenerateResponse:
     report = _get_report(report_id, db)
-    validation = validate_report(
-        report, db.get(Manager, report.manager_id), db.get(Product, report.product_id)
-    )
+    manager = db.get(Manager, report.manager_id)
+    products = _report_products(report, db)
+    validation = validate_report(report, manager, products)
+    product = products[0] if products else None
     if not validation.valid:
         raise HTTPException(status_code=422, detail=validation.model_dump())
+    scorecard = db.scalar(
+        select(ReportScorecard).where(ReportScorecard.report_id == report_id)
+    )
     try:
-        generated = generate_document(report)
+        generated = generate_document(report, scorecard_snapshot(scorecard))
     except (OSError, ValueError, KeyError) as exc:
         raise HTTPException(status_code=500, detail=f"报告生成失败：{exc}") from exc
     report.generated_filename = generated.filename
+    if manager is None or product is None:
+        raise HTTPException(status_code=409, detail="报告关联的管理人或产品不存在")
+    notification = create_notification(
+        db,
+        report,
+        manager,
+        product,
+        generated.filename,
+    )
     db.commit()
+    enqueue_notification(notification.id, db.get_bind())
     return GenerateResponse(
         filename=generated.filename,
         download_url=f"/api/files/{generated.filename}",
@@ -195,7 +408,7 @@ def create_generation_job(
 ) -> ReportGenerationJob:
     report = _get_report(report_id, db)
     validation = validate_report(
-        report, db.get(Manager, report.manager_id), db.get(Product, report.product_id)
+        report, db.get(Manager, report.manager_id), _report_products(report, db)
     )
     if not validation.valid:
         raise HTTPException(status_code=422, detail=validation.model_dump())
@@ -213,10 +426,16 @@ def create_generation_job(
     if active is not None:
         return active
 
+    content_snapshot = dict(report.content or {})
+    frozen_scorecard = scorecard_snapshot(
+        db.scalar(select(ReportScorecard).where(ReportScorecard.report_id == report_id))
+    )
+    if frozen_scorecard:
+        content_snapshot["__scorecard__"] = frozen_scorecard
     job = ReportGenerationJob(
         report_id=report.id,
         template_type=report.template_type,
-        content_snapshot=dict(report.content or {}),
+        content_snapshot=content_snapshot,
         status=GenerationJobStatus.QUEUED,
     )
     db.add(job)
@@ -291,7 +510,7 @@ def upload_report_image(
     if legacy_field:
         content.pop(legacy_field, None)
     content[field_name] = {
-        "path": str(target.resolve()),
+        "path": storage.upload_relative_path(target),
         "original_filename": original_filename or stored_filename,
     }
     report.content = content
@@ -332,9 +551,11 @@ def remove_report_image(
 
     raw_path = image_value.get("path") if isinstance(image_value, dict) else image_value
     if raw_path:
-        stored_path = Path(str(raw_path)).resolve()
-        upload_root = storage.UPLOAD_DIR.resolve()
-        if stored_path.is_relative_to(upload_root) and stored_path.is_file():
+        try:
+            stored_path = storage.resolve_uploaded_image(raw_path)
+        except ValueError:
+            stored_path = None
+        if stored_path is not None and stored_path.is_file():
             stored_path.unlink()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 

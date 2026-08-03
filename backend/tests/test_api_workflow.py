@@ -51,6 +51,7 @@ def test_private_report_crud_generation_and_state_flow(
     uploaded_dir = tmp_path / "uploaded_images"
     monkeypatch.setattr(storage, "GENERATED_DIR", generated_dir)
     monkeypatch.setattr(storage, "UPLOAD_DIR", uploaded_dir)
+    monkeypatch.setattr(storage, "VERSION_STORAGE_DIR", tmp_path / "report_versions")
 
     manager, product, report = create_report_records(
         client,

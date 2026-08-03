@@ -9,6 +9,8 @@ const router = createRouter({
     { path: '/managers/:id', name: 'manager-detail', component: () => import('../views/ManagerDetailView.vue'), meta: { title: '管理人详情' } },
     { path: '/reports/:id', name: 'report-edit', component: () => import('../views/ReportEditorView.vue'), meta: { title: '报告编辑' } },
     { path: '/reports/:id/preview', name: 'report-preview', component: () => import('../views/ReportPreviewView.vue'), meta: { title: '报告预览' } },
+    { path: '/fill/:token', name: 'public-fill', component: () => import('../views/PublicFillView.vue'), meta: { title: '尽调资料填写' } },
+    { path: '/recycle-bin', name: 'recycle-bin', component: () => import('../views/RecycleBinView.vue'), meta: { title: '回收站' } },
     { path: '/:pathMatch(.*)*', component: () => import('../views/NotFoundView.vue'), meta: { title: '页面不存在' } },
   ],
   scrollBehavior: () => ({ top: 0 }),

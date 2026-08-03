@@ -1,5 +1,6 @@
 import privateManifestData from '../data/private_fund_manifest.json'
 import licensedManifestData from '../data/licensed_institution_manifest.json'
+import { toRaw } from 'vue'
 import type { Manifest, ManifestField, ReportStatus, TemplateType } from '../types'
 
 const manifests: Record<TemplateType, Manifest> = {
@@ -9,6 +10,10 @@ const manifests: Record<TemplateType, Manifest> = {
 
 export const getManifest = (type: TemplateType) => manifests[type]
 export const getFields = (type: TemplateType) => getManifest(type).bookmarks
+
+export function cloneReportContent<T extends Record<string, unknown>>(content: T): T {
+  return structuredClone(toRaw(content))
+}
 
 export function fieldSection(field: ManifestField): number | undefined {
   const standaloneImages: Record<string, number> = {
@@ -36,9 +41,9 @@ export const strategyOptions = [
   ['cover_strategy_stock_quant', '股票量化选股', 'quant'],
   ['cover_strategy_stock_discretionary', '股票主观多头', ''],
   ['cover_strategy_macro_hedge', '宏观对冲', ''],
-  ['cover_strategy_market_neutral', '市场中性', ''],
+  ['cover_strategy_market_neutral', '市场中性', 'quant'],
   ['cover_strategy_futures_options_arbitrage', '期货期权套利', 'option'],
-  ['cover_strategy_t0', 'T0', ''],
+  ['cover_strategy_t0', 'T0', 'quant'],
   ['cover_strategy_bond_pure', '纯债', 'bond'],
   ['cover_strategy_bond_enhanced', '固收增强', 'bond'],
   ['cover_strategy_bond_composite', '固收复合', 'bond'],

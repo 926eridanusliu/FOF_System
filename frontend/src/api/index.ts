@@ -1,11 +1,19 @@
 import type {
   GenerateResult,
+  DeletionRecord,
   GenerationJob,
   ImageUploadResult,
+  JsonImportResult,
   Manager,
   Product,
+  PublicReport,
   Report,
+  ReportInvitation,
+  ReportScorecard,
+  ReportVersionComparison,
+  ReportVersionSummary,
   ReportStatus,
+  ScorecardCalculationInput,
   ValidationResult,
 } from '../types'
 
@@ -49,12 +57,13 @@ export const api = {
     get: (id: number) => request<Manager>(`/api/managers/${id}`),
     create: (body: Partial<Manager>) => request<Manager>('/api/managers', json('POST', body)),
     update: (id: number, body: Partial<Manager>) => request<Manager>(`/api/managers/${id}`, json('PUT', body)),
-    remove: (id: number) => request<void>(`/api/managers/${id}`, { method: 'DELETE' }),
+    remove: (id: number, reason: string) => request<void>(`/api/managers/${id}`, json('DELETE', { reason })),
   },
   products: {
     list: (managerId?: number) => request<Product[]>(`/api/products?limit=200${managerId ? `&manager_id=${managerId}` : ''}`),
     create: (body: Partial<Product>) => request<Product>('/api/products', json('POST', body)),
     update: (id: number, body: Partial<Product>) => request<Product>(`/api/products/${id}`, json('PUT', body)),
+    remove: (id: number) => request<void>(`/api/products/${id}`, { method: 'DELETE' }),
   },
   reports: {
     list: (filters: { managerId?: number; productId?: number; status?: ReportStatus } = {}) => {
@@ -67,6 +76,11 @@ export const api = {
     get: (id: number) => request<Report>(`/api/reports/${id}`),
     create: (body: Partial<Report>) => request<Report>('/api/reports', json('POST', body)),
     update: (id: number, body: Partial<Report>) => request<Report>(`/api/reports/${id}`, json('PUT', body)),
+    remove: (id: number, reason: string) => request<void>(`/api/reports/${id}`, json('DELETE', { reason })),
+    importJson: (id: number, file: File, apply = false) => request<JsonImportResult>(
+      `/api/reports/${id}/import-json?apply=${apply}`,
+      { method: 'POST', body: file, headers: { 'Content-Type': 'application/json' } },
+    ),
     validate: (id: number) => request<ValidationResult>(`/api/reports/${id}/validate`, { method: 'POST' }),
     submit: (id: number) => request<Report>(`/api/reports/${id}/submit`, { method: 'POST' }),
     archive: (id: number) => request<Report>(`/api/reports/${id}/archive`, { method: 'POST' }),
@@ -78,6 +92,67 @@ export const api = {
       { method: 'POST', body: file, headers: { 'Content-Type': file.type, 'X-Filename': encodeURIComponent(file.name) } },
     ),
     removeImage: (id: number, field: string) => request<void>(`/api/reports/${id}/images/${encodeURIComponent(field)}`, { method: 'DELETE' }),
+    getScorecard: (id: number) => request<ReportScorecard>(`/api/reports/${id}/scorecard`),
+    uploadNav: (id: number, file: File) => request<ReportScorecard>(
+      `/api/reports/${id}/scorecard/nav`,
+      {
+        method: 'POST',
+        body: file,
+        headers: {
+          'Content-Type': file.type || 'application/octet-stream',
+          'X-Filename': encodeURIComponent(file.name),
+        },
+      },
+    ),
+    calculateScorecard: (id: number, body: ScorecardCalculationInput) => request<ReportScorecard>(
+      `/api/reports/${id}/scorecard/calculate`,
+      json('POST', body),
+    ),
+    removeNav: (id: number) => request<void>(`/api/reports/${id}/scorecard/nav`, { method: 'DELETE' }),
+    listVersions: (id: number) => request<ReportVersionSummary[]>(`/api/reports/${id}/versions`),
+    compareVersions: (id: number, fromVersion: number, toVersion: number) => {
+      const params = new URLSearchParams({
+        from_version: String(fromVersion),
+        to_version: String(toVersion),
+      })
+      return request<ReportVersionComparison>(`/api/reports/${id}/versions/compare?${params}`)
+    },
+    restoreVersion: (id: number, versionNumber: number) => request<Report>(
+      `/api/reports/${id}/versions/${versionNumber}/restore`,
+      { method: 'POST' },
+    ),
+    createInvitation: (id: number, expiresInDays: number) => request<ReportInvitation>(
+      `/api/reports/${id}/invitations`,
+      json('POST', { expires_in_days: expiresInDays }),
+    ),
+    listInvitations: (id: number) => request<ReportInvitation[]>(`/api/reports/${id}/invitations`),
+    revokeInvitation: (reportId: number, invitationId: number) => request<void>(
+      `/api/reports/${reportId}/invitations/${invitationId}`,
+      { method: 'DELETE' },
+    ),
+  },
+  publicFill: {
+    get: (token: string) => request<PublicReport>(`/api/public/fill/${encodeURIComponent(token)}`),
+    update: (token: string, body: Pick<PublicReport, 'content' | 'conclusion' | 'risk_items'>) => request<PublicReport>(
+      `/api/public/fill/${encodeURIComponent(token)}`,
+      json('PUT', body),
+    ),
+    submit: (token: string) => request<PublicReport>(
+      `/api/public/fill/${encodeURIComponent(token)}/submit`,
+      { method: 'POST' },
+    ),
+    uploadImage: (token: string, field: string, file: File) => request<ImageUploadResult>(
+      `/api/public/fill/${encodeURIComponent(token)}/images/${encodeURIComponent(field)}`,
+      { method: 'POST', body: file, headers: { 'Content-Type': file.type, 'X-Filename': encodeURIComponent(file.name) } },
+    ),
+    removeImage: (token: string, field: string) => request<void>(
+      `/api/public/fill/${encodeURIComponent(token)}/images/${encodeURIComponent(field)}`,
+      { method: 'DELETE' },
+    ),
+  },
+  deletions: {
+    list: () => request<DeletionRecord[]>('/api/deletions'),
+    restore: (id: number) => request<DeletionRecord>(`/api/deletions/${id}/restore`, { method: 'POST' }),
   },
 }
 

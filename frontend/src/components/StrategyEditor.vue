@@ -5,7 +5,12 @@ import type { ManifestField } from '../types'
 import { branchLabels, strategyOptions } from '../utils/report'
 import FieldGroup from './FieldGroup.vue'
 
-const props = defineProps<{ fields: ManifestField[]; content: Record<string, any>; disabled?: boolean }>()
+const props = withDefaults(defineProps<{
+  fields: ManifestField[]
+  content: Record<string, any>
+  disabled?: boolean
+  autoStrategyKeys?: string[]
+}>(), { autoStrategyKeys: () => [] })
 const branchFields = (branch: string) => props.fields.filter((item) => item.strategy === branch || item.bookmark.startsWith(`strat_${branch}_`))
 const activeBranches = computed<Set<string>>(() => new Set(strategyOptions.filter(([key,,branch]) => branch && Boolean(props.content[key])).map(([, , branch]) => branch)))
 
@@ -32,9 +37,9 @@ async function toggle(key: string, branch: string, value: boolean) {
           v-for="[key, label, branch] in strategyOptions"
           :key="key"
           :model-value="Boolean(content[key])"
-          :disabled="disabled"
+          :disabled="disabled || autoStrategyKeys.includes(key)"
           @change="(value: string | number | boolean) => toggle(key, branch, Boolean(value))"
-        >{{ label }}</el-checkbox>
+        >{{ label }}<small v-if="autoStrategyKeys.includes(key)" class="muted">（产品自动）</small></el-checkbox>
       </el-space>
       <el-input v-model="content.cover_strategy_other_text" :disabled="disabled" placeholder="其他策略说明" style="margin-top:14px" />
     </div>

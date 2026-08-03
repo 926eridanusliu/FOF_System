@@ -10,6 +10,7 @@ from validator.mapper import InputDataMapper
 from app import storage
 from app.models.report import DueDiligenceReport, ReportTemplateType
 from app.services.report_validator import manifest_image_fields
+from app.services.scorecard_document import append_scorecard
 
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent.parent
@@ -46,19 +47,28 @@ def _prepare_content(report: DueDiligenceReport, profile: str) -> dict[str, Any]
         for key, value in raw.items()
         if key not in {"report_type", "attachment_type", "template_type"}
     }
-    upload_root = storage.UPLOAD_DIR.resolve()
     for field in manifest_image_fields(report.template_type):
         value = prepared.get(field)
         if not value:
             continue
         raw_path = value.get("path") if isinstance(value, dict) else value
-        image_path = Path(str(raw_path)).expanduser().resolve()
-        if not image_path.is_relative_to(upload_root) or not image_path.is_file():
+        try:
+            image_path = storage.resolve_uploaded_image(raw_path)
+        except ValueError:
+            image_path = None
+        if image_path is None or not image_path.is_file():
             raise ValueError(f"图片字段 {field} 必须使用图片上传接口提供的文件")
+        if isinstance(value, dict):
+            prepared[field] = {**value, "path": str(image_path)}
+        else:
+            prepared[field] = str(image_path)
     return prepared
 
 
-def generate_document(report: DueDiligenceReport) -> GeneratedDocument:
+def generate_document(
+    report: DueDiligenceReport,
+    scorecard_snapshot: dict[str, Any] | None = None,
+) -> GeneratedDocument:
     config = CONFIGS[report.template_type]
     storage.GENERATED_DIR.mkdir(parents=True, exist_ok=True)
     filename = f"report-{report.id}-{uuid4().hex[:8]}.docx"
@@ -77,6 +87,8 @@ def generate_document(report: DueDiligenceReport) -> GeneratedDocument:
     ).validate(output_path, content)
     validation.to_json(output_path.with_name(f"{output_path.stem}_校验报告.json"))
     validation.to_docx(output_path.with_name(f"{output_path.stem}_校验报告.docx"))
+    if scorecard_snapshot:
+        append_scorecard(output_path, scorecard_snapshot)
 
     return GeneratedDocument(
         filename=filename,
