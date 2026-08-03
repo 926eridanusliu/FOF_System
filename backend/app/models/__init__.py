@@ -8,6 +8,7 @@ from app.models.generation_job import GenerationJobStatus, ReportGenerationJob
 from app.models.scorecard import ReportScorecard
 from app.models.report_version import ReportVersion
 from app.models.notification import NotificationStatus, ReportNotification
+from app.models.deletion import DeletionRecord
 
 __all__ = [
     "Manager",
@@ -24,4 +25,5 @@ __all__ = [
     "ReportVersion",
     "NotificationStatus",
     "ReportNotification",
+    "DeletionRecord",
 ]

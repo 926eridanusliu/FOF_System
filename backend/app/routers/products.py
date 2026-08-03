@@ -8,6 +8,7 @@ from app.models.manager import Manager
 from app.models.product import Product, ProductStrategy
 from app.models.report import DueDiligenceReport, ReportProduct
 from app.schemas.product import ProductCreate, ProductRead, ProductUpdate
+from app.services.deletions import is_deleted, visible_entity
 
 
 router = APIRouter(prefix="/api/products", tags=["Products"])
@@ -15,13 +16,13 @@ router = APIRouter(prefix="/api/products", tags=["Products"])
 
 def _get_product(product_id: int, db: Session) -> Product:
     product = db.get(Product, product_id)
-    if product is None:
+    if product is None or is_deleted("manager", product.manager_id, db):
         raise HTTPException(status_code=404, detail="产品不存在")
     return product
 
 
 def _ensure_manager(manager_id: int, db: Session) -> None:
-    if db.get(Manager, manager_id) is None:
+    if db.get(Manager, manager_id) is None or is_deleted("manager", manager_id, db):
         raise HTTPException(status_code=404, detail="管理人不存在")
 
 
@@ -61,7 +62,7 @@ def list_products(
     limit: int = Query(100, ge=1, le=200),
     db: Session = Depends(get_db),
 ) -> list[Product]:
-    statement = select(Product)
+    statement = select(Product).where(visible_entity("manager", Product.manager_id))
     if manager_id is not None:
         statement = statement.where(Product.manager_id == manager_id)
     return list(db.scalars(statement.offset(skip).limit(limit)))

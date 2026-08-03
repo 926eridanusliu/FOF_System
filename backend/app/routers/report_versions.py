@@ -22,6 +22,7 @@ from app.services.report_versions import (
     verify_version,
     version_summary,
 )
+from app.services.deletions import is_deleted
 
 
 router = APIRouter(prefix="/api/reports/{report_id}/versions", tags=["Report Versions"])
@@ -29,7 +30,7 @@ router = APIRouter(prefix="/api/reports/{report_id}/versions", tags=["Report Ver
 
 def _get_report(report_id: int, db: Session) -> DueDiligenceReport:
     report = db.get(DueDiligenceReport, report_id)
-    if report is None:
+    if report is None or is_deleted("report", report_id, db) or is_deleted("manager", report.manager_id, db):
         raise HTTPException(status_code=404, detail="尽调报告不存在")
     return report
 

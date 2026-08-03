@@ -20,6 +20,7 @@ from app.models.report import DueDiligenceReport, ReportProduct, ReportStatus
 from app.models.report_version import ReportVersion
 from app.models.scorecard import ReportScorecard
 from app.schemas.generation_job import GenerationJobRead
+from app.schemas.deletion import DeletionRequest
 from app.schemas.report import (
     GenerateResponse,
     ImageUploadResponse,
@@ -42,6 +43,7 @@ from app.services.scorecard import scorecard_snapshot
 from app.services.feishu_notifications import create_notification, enqueue_notification
 from app.services.report_validator import manifest_fields
 from validator.mapper import InputDataMapper
+from app.services.deletions import add_deletion, is_deleted, visible_entity
 
 
 router = APIRouter(prefix="/api/reports", tags=["Reports"])
@@ -56,14 +58,18 @@ LEGACY_IMAGE_FIELDS = {
 
 def _get_report(report_id: int, db: Session) -> DueDiligenceReport:
     report = db.get(DueDiligenceReport, report_id)
-    if report is None:
+    if (
+        report is None
+        or is_deleted("report", report_id, db)
+        or is_deleted("manager", report.manager_id, db)
+    ):
         raise HTTPException(status_code=404, detail="尽调报告不存在")
     return report
 
 
 def _ensure_relations(manager_id: int, product_ids: list[int], db: Session) -> tuple[Manager, list[Product]]:
     manager = db.get(Manager, manager_id)
-    if manager is None:
+    if manager is None or is_deleted("manager", manager_id, db):
         raise HTTPException(status_code=404, detail="管理人不存在")
     if not product_ids:
         raise HTTPException(status_code=422, detail="至少选择一只产品")
@@ -134,7 +140,10 @@ def list_reports(
     limit: int = Query(100, ge=1, le=200),
     db: Session = Depends(get_db),
 ) -> list[DueDiligenceReport]:
-    statement = select(DueDiligenceReport)
+    statement = select(DueDiligenceReport).where(
+        visible_entity("report", DueDiligenceReport.id),
+        visible_entity("manager", DueDiligenceReport.manager_id),
+    )
     if report_status is not None:
         statement = statement.where(DueDiligenceReport.status == report_status)
     if manager_id is not None:
@@ -261,15 +270,33 @@ async def import_report_json(
 
 
 @router.delete("/{report_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_report(report_id: int, db: Session = Depends(get_db)) -> Response:
+def delete_report(
+    report_id: int,
+    payload: DeletionRequest | None = Body(default=None),
+    db: Session = Depends(get_db),
+) -> Response:
     report = _get_report(report_id, db)
-    if report.status != ReportStatus.DRAFT:
-        raise HTTPException(status_code=409, detail="只有草稿报告可以删除")
-    if db.scalar(
+    has_versions = bool(db.scalar(
         select(ReportVersion.id).where(ReportVersion.report_id == report_id).limit(1)
-    ):
-        raise HTTPException(status_code=409, detail="已有历史版本的报告不能删除")
-    db.delete(report)
+    ))
+    if (report.status != ReportStatus.DRAFT or has_versions) and payload is None:
+        raise HTTPException(status_code=409, detail="正式报告或已有历史版本的报告，删除时必须填写原因")
+    add_deletion(
+        entity_type="report",
+        entity_id=report.id,
+        display_name=report.title,
+        reason=payload.reason if payload else "删除草稿报告",
+        snapshot={
+            "title": report.title,
+            "manager_id": report.manager_id,
+            "product_ids": report.product_ids,
+            "template_type": report.template_type.value,
+            "status": report.status.value,
+            "has_versions": has_versions,
+            "generated_filename": report.generated_filename,
+        },
+        db=db,
+    )
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 

@@ -41,6 +41,16 @@ export interface Report {
   updated_at: string
 }
 
+export interface DeletionRecord {
+  id: number
+  entity_type: 'manager' | 'report'
+  entity_id: number
+  display_name: string
+  reason: string
+  snapshot: Record<string, unknown>
+  deleted_at: string
+}
+
 export interface ValidationIssue { field: string; message: string }
 export interface ValidationResult {
   valid: boolean

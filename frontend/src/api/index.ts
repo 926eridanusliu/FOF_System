@@ -1,5 +1,6 @@
 import type {
   GenerateResult,
+  DeletionRecord,
   GenerationJob,
   ImageUploadResult,
   JsonImportResult,
@@ -56,7 +57,7 @@ export const api = {
     get: (id: number) => request<Manager>(`/api/managers/${id}`),
     create: (body: Partial<Manager>) => request<Manager>('/api/managers', json('POST', body)),
     update: (id: number, body: Partial<Manager>) => request<Manager>(`/api/managers/${id}`, json('PUT', body)),
-    remove: (id: number) => request<void>(`/api/managers/${id}`, { method: 'DELETE' }),
+    remove: (id: number, reason: string) => request<void>(`/api/managers/${id}`, json('DELETE', { reason })),
   },
   products: {
     list: (managerId?: number) => request<Product[]>(`/api/products?limit=200${managerId ? `&manager_id=${managerId}` : ''}`),
@@ -75,6 +76,7 @@ export const api = {
     get: (id: number) => request<Report>(`/api/reports/${id}`),
     create: (body: Partial<Report>) => request<Report>('/api/reports', json('POST', body)),
     update: (id: number, body: Partial<Report>) => request<Report>(`/api/reports/${id}`, json('PUT', body)),
+    remove: (id: number, reason: string) => request<void>(`/api/reports/${id}`, json('DELETE', { reason })),
     importJson: (id: number, file: File, apply = false) => request<JsonImportResult>(
       `/api/reports/${id}/import-json?apply=${apply}`,
       { method: 'POST', body: file, headers: { 'Content-Type': 'application/json' } },
@@ -147,6 +149,10 @@ export const api = {
       `/api/public/fill/${encodeURIComponent(token)}/images/${encodeURIComponent(field)}`,
       { method: 'DELETE' },
     ),
+  },
+  deletions: {
+    list: () => request<DeletionRecord[]>('/api/deletions'),
+    restore: (id: number) => request<DeletionRecord>(`/api/deletions/${id}/restore`, { method: 'POST' }),
   },
 }
 

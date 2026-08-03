@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { api, apiMessage } from '../api'
 import type { Manager, Product, Report, TemplateType } from '../types'
 import { statusLabel, strategyOptions, templateLabel } from '../utils/report'
@@ -65,6 +65,20 @@ async function createReport() {
   } catch (error) { ElMessage.error(apiMessage(error)) } finally { saving.value = false }
 }
 
+async function deleteManager() {
+  if (!manager.value) return
+  try {
+    const { value } = await ElMessageBox.prompt(
+      `删除后该管理人及其 ${products.value.length} 只产品、${reports.value.length} 份报告将从工作台隐藏，但审计记录和原始数据仍会保留。请输入删除原因。`,
+      `删除管理人：${manager.value.name}`,
+      { confirmButtonText: '确认删除', cancelButtonText: '取消', inputPlaceholder: '例如：重复建档', inputValidator: (text) => text.trim().length >= 2 || '请填写至少2个字的删除原因', type: 'warning' },
+    )
+    await api.managers.remove(managerId, value.trim())
+    ElMessage.success('管理人已移入回收站')
+    router.push('/managers')
+  } catch (error) { if (error !== 'cancel' && error !== 'close') ElMessage.error(apiMessage(error)) }
+}
+
 onMounted(load)
 </script>
 
@@ -72,7 +86,7 @@ onMounted(load)
   <section class="page" v-loading="loading">
     <div v-if="manager" class="page-heading">
       <div><span class="eyebrow">Manager Profile · #{{ manager.id }}</span><h1>{{ manager.name }}</h1><p>机构档案、产品与尽调历史集中视图。</p></div>
-      <div class="heading-actions"><el-button @click="router.push('/managers')">返回名录</el-button><el-button type="primary" :disabled="!products.length" @click="reportDialog = true">新建尽调报告</el-button></div>
+      <div class="heading-actions"><el-button @click="router.push('/managers')">返回名录</el-button><el-button type="danger" plain @click="deleteManager">删除管理人</el-button><el-button type="primary" :disabled="!products.length" @click="reportDialog = true">新建尽调报告</el-button></div>
     </div>
     <div v-if="manager" class="detail-grid">
       <div class="stack">

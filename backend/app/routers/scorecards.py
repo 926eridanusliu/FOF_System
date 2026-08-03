@@ -18,6 +18,7 @@ from app.services.scorecard import (
     parse_nav_upload,
     preview_rows,
 )
+from app.services.deletions import is_deleted
 
 
 router = APIRouter(prefix="/api/reports", tags=["Scorecards"])
@@ -32,7 +33,7 @@ NAV_CONTENT_TYPES = {
 
 def _get_report(report_id: int, db: Session) -> DueDiligenceReport:
     report = db.get(DueDiligenceReport, report_id)
-    if report is None:
+    if report is None or is_deleted("report", report_id, db) or is_deleted("manager", report.manager_id, db):
         raise HTTPException(status_code=404, detail="尽调报告不存在")
     return report
 

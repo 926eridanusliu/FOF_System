@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { Collection, Document, OfficeBuilding } from '@element-plus/icons-vue'
+import { Collection, DeleteFilled, Document, OfficeBuilding } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const isReportWorkspace = computed(() => route.path.startsWith('/reports/'))
@@ -21,6 +21,9 @@ const isPublicFill = computed(() => route.path.startsWith('/fill/'))
         </router-link>
         <router-link to="/managers/new">
           <el-icon><Collection /></el-icon><span>新建管理人</span>
+        </router-link>
+        <router-link to="/recycle-bin">
+          <el-icon><DeleteFilled /></el-icon><span>回收站</span>
         </router-link>
       </nav>
       <div class="sidebar-foot">

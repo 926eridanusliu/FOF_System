@@ -31,6 +31,7 @@ from app.schemas.invitation import (
 )
 from app.schemas.report import ImageUploadResponse
 from app.services.report_validator import manifest_fields, manifest_image_fields
+from app.services.deletions import is_deleted
 
 
 router = APIRouter(tags=["Report invitations"])
@@ -51,6 +52,8 @@ def _get_invitation(token: str, db: Session, *, editable: bool = False) -> Repor
     )
     if invitation is None:
         raise HTTPException(status_code=404, detail="填写链接不存在")
+    if is_deleted("report", invitation.report_id, db) or is_deleted("manager", invitation.report.manager_id, db):
+        raise HTTPException(status_code=410, detail="对应报告已经删除")
     now = datetime.now(timezone.utc)
     if invitation.revoked_at is not None:
         raise HTTPException(status_code=410, detail="填写链接已被撤销")

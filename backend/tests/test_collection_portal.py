@@ -174,3 +174,70 @@ def test_revoked_invitation_is_unavailable(client, private_fund_data) -> None:
         f"/api/reports/{report['id']}/invitations/{invitation['id']}"
     ).status_code == 204
     assert client.get(f"/api/public/fill/{token}").status_code == 410
+
+
+def test_report_delete_is_audited_and_reversible(client, private_fund_data) -> None:
+    manager = _create_manager(client)
+    product = _create_product(
+        client, manager["id"], "待删除报告产品", ["cover_strategy_stock_quant"]
+    )
+    report = client.post(
+        "/api/reports",
+        json={
+            "title": "重复的测试报告",
+            "manager_id": manager["id"],
+            "product_id": product["id"],
+            "content": private_fund_data,
+        },
+    ).json()
+
+    deleted = client.request(
+        "DELETE",
+        f"/api/reports/{report['id']}",
+        json={"reason": "重复创建"},
+    )
+    assert deleted.status_code == 204
+    assert client.get(f"/api/reports/{report['id']}").status_code == 404
+    assert client.get("/api/reports").json() == []
+
+    records = client.get("/api/deletions").json()
+    assert records[0]["entity_type"] == "report"
+    assert records[0]["reason"] == "重复创建"
+    assert records[0]["snapshot"]["status"] == "draft"
+    assert client.post(f"/api/deletions/{records[0]['id']}/restore").status_code == 200
+    assert client.get(f"/api/reports/{report['id']}").status_code == 200
+
+
+def test_manager_delete_hides_related_data_and_restore_recovers_it(
+    client, private_fund_data
+) -> None:
+    manager = _create_manager(client)
+    product = _create_product(
+        client, manager["id"], "关联产品", ["cover_strategy_market_neutral"]
+    )
+    report = client.post(
+        "/api/reports",
+        json={
+            "title": "关联报告",
+            "manager_id": manager["id"],
+            "product_id": product["id"],
+            "content": private_fund_data,
+        },
+    ).json()
+
+    deleted = client.request(
+        "DELETE",
+        f"/api/managers/{manager['id']}",
+        json={"reason": "重复管理人档案"},
+    )
+    assert deleted.status_code == 204
+    assert client.get(f"/api/managers/{manager['id']}").status_code == 404
+    assert client.get(f"/api/products?manager_id={manager['id']}").json() == []
+    assert client.get(f"/api/reports/{report['id']}").status_code == 404
+
+    record = client.get("/api/deletions?entity_type=manager").json()[0]
+    assert record["snapshot"]["product_count"] == 1
+    assert record["snapshot"]["report_count"] == 1
+    assert client.post(f"/api/deletions/{record['id']}/restore").status_code == 200
+    assert client.get(f"/api/managers/{manager['id']}").status_code == 200
+    assert client.get(f"/api/reports/{report['id']}").status_code == 200

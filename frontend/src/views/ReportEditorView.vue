@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
-import { Check, DocumentChecked, Link, Upload, View } from '@element-plus/icons-vue'
+import { Check, Delete, DocumentChecked, Link, Upload, View } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { api, apiMessage } from '../api'
 import type { JsonImportResult, Manager, ManifestField, Product, Report, ReportInvitation, ValidationResult } from '../types'
@@ -100,6 +100,22 @@ async function submitReport() {
 async function archiveReport() {
   try { await ElMessageBox.confirm('归档后报告进入历史档案，确认归档？', '归档报告', { type: 'warning' }); hydrate(await api.reports.archive(reportId)); ElMessage.success('报告已归档') }
   catch (error) { if (error !== 'cancel' && error !== 'close') ElMessage.error(apiMessage(error)) }
+}
+
+async function deleteReport() {
+  if (!report.value) return
+  try {
+    const { value } = await ElMessageBox.prompt(
+      `删除后报告将从工作台隐藏，但报告数据、版本状态和删除原因会保留在回收站。请输入删除原因。`,
+      `删除报告：${report.value.title}`,
+      { confirmButtonText: '确认删除', cancelButtonText: '取消', inputPlaceholder: '例如：重复报告或测试数据', inputValidator: (text) => text.trim().length >= 2 || '请填写至少2个字的删除原因', type: 'warning' },
+    )
+    const managerId = report.value.manager_id
+    await api.reports.remove(reportId, value.trim())
+    dirty.value = false
+    ElMessage.success('报告已移入回收站')
+    router.push(`/managers/${managerId}`)
+  } catch (error) { if (error !== 'cancel' && error !== 'close') ElMessage.error(apiMessage(error)) }
 }
 
 async function handleVersionRestored(restored: Report) {
@@ -215,6 +231,7 @@ onBeforeRouteLeave(async () => {
         <el-button v-if="report.status === 'draft'" :icon="Check" :loading="saving" @click="save(false)">保存草稿</el-button>
         <el-button v-if="report.status === 'draft'" type="primary" @click="submitReport">提交报告</el-button>
         <el-button v-if="report.status === 'submitted'" type="primary" @click="archiveReport">归档报告</el-button>
+        <el-button type="danger" plain :icon="Delete" @click="deleteReport">删除报告</el-button>
       </div>
 
       <el-tabs v-model="activeTab" class="editor-tabs">

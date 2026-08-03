@@ -123,7 +123,7 @@ pytest
 | GET | `/api/managers` | 分页查询管理人 |
 | GET | `/api/managers/{id}` | 查询管理人详情 |
 | PUT | `/api/managers/{id}` | 更新管理人 |
-| DELETE | `/api/managers/{id}` | 删除无关联数据的管理人 |
+| DELETE | `/api/managers/{id}` | 将管理人及关联档案移入回收站 |
 
 ### 产品
 
@@ -143,7 +143,7 @@ pytest
 | GET | `/api/reports` | 分页查询，可按状态、管理人、产品筛选 |
 | GET | `/api/reports/{id}` | 查询报告详情 |
 | PUT | `/api/reports/{id}` | 编辑草稿 |
-| DELETE | `/api/reports/{id}` | 删除草稿 |
+| DELETE | `/api/reports/{id}` | 将报告移入回收站 |
 | POST | `/api/reports/{id}/validate` | 校验关联关系和模板内容 |
 | POST | `/api/reports/{id}/submit` | 提交校验通过的草稿 |
 | POST | `/api/reports/{id}/archive` | 归档已提交报告 |
@@ -169,6 +169,19 @@ pytest
 | GET | `/api/notifications/config` | 查询非敏感的飞书配置完整度 |
 | GET | `/api/files/{filename}` | 下载生成的 DOCX |
 | GET | `/api/files/images/{report_id}/{filename}` | 预览或下载已上传图片 |
+
+### 受控删除与回收站
+
+管理人和报告的删除采用可恢复的逻辑删除，不会物理清除原始数据库记录。删除请求需
+提交 `{"reason": "删除原因"}`；有关联数据的管理人、正式报告和已有历史版本的
+报告不填写原因时会被拒绝。删除后：
+
+- 工作台、详情接口及外部填写链接不再显示或访问该数据；
+- 删除类型、名称、原因、时间和摘要写入 `deletion_records`；
+- `GET /api/deletions` 可查看删除记录；
+- `POST /api/deletions/{record_id}/restore` 可恢复。
+
+历史报告、评分数据和版本文件不会因为逻辑删除而被清除。
 
 公开填写接口仅凭随机令牌访问指定报告，不提供管理人、产品或其他报告列表：
 

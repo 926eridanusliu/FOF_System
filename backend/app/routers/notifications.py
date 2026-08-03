@@ -7,13 +7,15 @@ from app.models.notification import ReportNotification
 from app.models.report import DueDiligenceReport
 from app.schemas.notification import NotificationConfigRead, NotificationRead
 from app.services.feishu_notifications import config_summary, retry_notification
+from app.services.deletions import is_deleted
 
 
 router = APIRouter(tags=["Feishu notifications"])
 
 
 def _ensure_report(report_id: int, db: Session) -> None:
-    if db.get(DueDiligenceReport, report_id) is None:
+    report = db.get(DueDiligenceReport, report_id)
+    if report is None or is_deleted("report", report_id, db) or is_deleted("manager", report.manager_id, db):
         raise HTTPException(status_code=404, detail="尽调报告不存在")
 
 
