@@ -3,7 +3,7 @@ import { computed, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { api, apiMessage } from '../api'
 import type { ManifestField } from '../types'
-import { imageUrl } from '../utils/report'
+import { fieldIsRequired, imageUrl } from '../utils/report'
 
 const props = defineProps<{ reportId?: number; publicToken?: string; fields: ManifestField[]; content: Record<string, any>; disabled?: boolean }>()
 const emit = defineEmits<{ changed: [field: string, removed: boolean] }>()
@@ -46,7 +46,7 @@ async function remove(field: string) {
 <template>
   <div class="image-grid">
     <article v-for="field in fields" :key="field.bookmark" class="image-card">
-      <h4>{{ field.prompt }}</h4><p class="mono">{{ field.bookmark }}</p>
+      <h4>{{ field.prompt }}<span v-if="fieldIsRequired(field)" class="required-mark" aria-label="必填">*</span></h4>
       <div class="image-preview">
         <img v-if="previews[field.bookmark]" :src="previews[field.bookmark]" :alt="field.prompt" />
         <span v-else class="muted">尚未上传</span>

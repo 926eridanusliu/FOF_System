@@ -665,6 +665,16 @@ def calculate_scorecard(table: NavTable, request: ScorecardCalculateRequest) -> 
         "risk_free_rate": risk_free_rate,
     }
     return {
+        "suggested_manual_scores": {
+            "one_year_return": round(one_year_score, 2), "relative_return": round(relative_score, 2),
+            "long_term_return": round(longterm_score, 2), "monthly_win_rate": round(win_score, 2),
+            "max_drawdown": round(drawdown_score, 2), "sharpe_ratio": round(sharpe_score, 2),
+            "calmar_ratio": round(calmar_score, 2), "managed_products": qualitative_rows[0]["score"],
+            "investment_manager": qualitative_rows[1]["score"], "research_team": qualitative_rows[2]["score"],
+            "team_stability": qualitative_rows[3]["score"], "allocation_value": qualitative_rows[4]["score"],
+            "risk_control": qualitative_rows[5]["score"], "coinvestment": qualitative_rows[6]["score"],
+            "compliance_deduction": deduction,
+        },
         "metrics": metrics,
         "score_rows": quantitative_rows + qualitative_rows,
         "quantitative_score": round(quantitative_score, 2),

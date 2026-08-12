@@ -155,6 +155,7 @@ pytest
 | POST | `/api/reports/{id}/import-json` | 预览或应用 JSON 导入 |
 | POST | `/api/reports/{id}/invitations` | 生成带有效期的管理人填写链接 |
 | GET | `/api/reports/{id}/invitations` | 查询填写链接状态 |
+| PATCH | `/api/reports/{id}/invitations/{invitation_id}/permission` | 允许或禁止管理方修改 |
 | DELETE | `/api/reports/{id}/invitations/{invitation_id}` | 撤销填写链接 |
 | GET | `/api/reports/{id}/scorecard` | 查询净值文件、评分输入及计算结果 |
 | POST | `/api/reports/{id}/scorecard/nav` | 上传并识别 `.xlsx/.csv` 净值文件 |
@@ -268,7 +269,8 @@ queued → running → completed
 
 ## Admission scorecard
 
-报告编辑页“准入评分卡”支持上传 `.xlsx` 或 `.csv` 净值文件。文件至少需要：
+报告编辑页“准入评分卡”支持员工逐项录入15个实际得分，并按正式模板生成独立
+Excel。净值自动测算作为可选辅助功能，支持上传 `.xlsx` 或 `.csv`，文件至少需要：
 
 ```text
 日期        累计净值
@@ -295,8 +297,8 @@ queued → running → completed
 基准净值列，否则按评分卡中的无基准策略规则判定相对收益。定性项目使用结构化
 表单，不从自由文本中猜测人数、年限或评级。
 
-评分完成后，同步和异步报告生成都会将评分结果快照作为附录写入 Word 末尾。
-未计算评分卡的历史报告仍可按原流程生成，不会出现空白附录。
+评分完成后点击“生成并下载 Excel”即可获得独立评分卡。评分卡不再写入附件1-1
+或附件1-2，同步和异步 Word 生成路径均与评分卡解耦。
 
 ## Report version history
 

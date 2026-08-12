@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { ElMessageBox } from 'element-plus'
 import type { ManifestField } from '../types'
-import { branchLabels, strategyOptions } from '../utils/report'
+import { branchLabels, selectedStrategyBranches, strategyOptions } from '../utils/report'
 import FieldGroup from './FieldGroup.vue'
 
 const props = withDefaults(defineProps<{
@@ -12,7 +12,7 @@ const props = withDefaults(defineProps<{
   autoStrategyKeys?: string[]
 }>(), { autoStrategyKeys: () => [] })
 const branchFields = (branch: string) => props.fields.filter((item) => item.strategy === branch || item.bookmark.startsWith(`strat_${branch}_`))
-const activeBranches = computed<Set<string>>(() => new Set(strategyOptions.filter(([key,,branch]) => branch && Boolean(props.content[key])).map(([, , branch]) => branch)))
+const activeBranches = computed<Set<string>>(() => selectedStrategyBranches(props.content))
 
 async function toggle(key: string, branch: string, value: boolean) {
   if (!value && branch) {
@@ -31,7 +31,7 @@ async function toggle(key: string, branch: string, value: boolean) {
 <template>
   <div class="strategy-groups">
     <div class="strategy-card is-active">
-      <h3>投资策略选择</h3>
+      <h3>投资策略选择<span class="required-mark" aria-label="必填">*</span></h3>
       <el-space wrap :size="18">
         <el-checkbox
           v-for="[key, label, branch] in strategyOptions"
@@ -44,12 +44,10 @@ async function toggle(key: string, branch: string, value: boolean) {
       <el-input v-model="content.cover_strategy_other_text" :disabled="disabled" placeholder="其他策略说明" style="margin-top:14px" />
     </div>
 
-    <div v-for="branch in ['quant','cta','bond','option']" :key="branch" class="strategy-card" :class="{ 'is-active': activeBranches.has(branch) }">
+    <div v-for="branch in [...activeBranches]" :key="branch" class="strategy-card is-active">
       <h3>{{ branchLabels[branch as keyof typeof branchLabels] }}</h3>
-      <template v-if="activeBranches.has(branch)">
-        <div class="strategy-branch"><FieldGroup :fields="branchFields(branch)" :content="content" :disabled="disabled" /></div>
-      </template>
-      <p v-else class="muted" style="margin:0;font-size:12px">选择对应策略后显示专属尽调问题。</p>
+      <div class="strategy-branch"><FieldGroup :fields="branchFields(branch)" :content="content" :disabled="disabled" /></div>
     </div>
+    <el-empty v-if="!activeBranches.size" description="选择上方策略后，系统只显示与该策略对应的专属问题" :image-size="72" />
   </div>
 </template>

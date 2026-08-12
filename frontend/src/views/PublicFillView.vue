@@ -18,7 +18,7 @@ const report = ref<PublicReport>(); const content = reactive<Record<string, any>
 const conclusion = ref(''); const riskItems = ref<string[]>([]); const activeTab = ref('basic')
 const lastSavedAt = ref<Date>(); const saveError = ref('')
 
-const disabled = computed(() => Boolean(report.value?.submitted_at))
+const disabled = computed(() => report.value ? !report.value.can_edit : true)
 const fields = computed(() => report.value ? getFields(report.value.template_type) : [])
 const qaFields = computed(() => fields.value.filter((item) => ['qa', 'qa_attachment'].includes(item.type)))
 const teamFields = computed(() => qaFields.value.filter((item) => fieldSection(item) === 1))
@@ -31,7 +31,7 @@ const complianceFields = computed(() => qaFields.value.filter((item) => {
 const tableFields = computed(() => fields.value.filter((item) => ['table_cell', 'table_cutoff_date'].includes(item.type)))
 const imageFields = computed(() => fields.value.filter((item) => item.type === 'image'))
 const otherCoverFields = computed(() => fields.value.filter((item) => item.type === 'cover' && !['cover_manager_name','cover_product_name','cover_investigator','cover_report_date','cover_strategy_other_text'].includes(item.bookmark)))
-const strategyMissing = computed(() => !strategyOptions.some(([key]) => Boolean(content[key])))
+const strategyMissing = computed(() => !content.cover_strategy_other_text && !strategyOptions.some(([key]) => Boolean(content[key])))
 
 function hydrate(data: PublicReport) {
   hydrating.value = true; report.value = data; conclusion.value = data.conclusion || ''; riskItems.value = [...data.risk_items]
@@ -75,6 +75,16 @@ async function submit() {
   if (dirty.value && !await save()) return
   if (strategyMissing.value) { activeTab.value = 'strategy'; return ElMessage.warning('请至少选择一种投资策略') }
   try {
+    const validation = await api.publicFill.validate(token)
+    if (!validation.valid) {
+      if (validation.errors.some((item) => item.field.includes('__dynamic_tables') || item.field.includes('table_'))) activeTab.value = 'tables'
+      await ElMessageBox.alert(
+        validation.errors.slice(0, 8).map((item, index) => `${index + 1}. ${item.message}`).join('\n') + (validation.errors.length > 8 ? `\n……另有 ${validation.errors.length - 8} 项` : ''),
+        `尚有 ${validation.errors.length} 项必填内容未完成`,
+        { type: 'error', confirmButtonText: '返回填写' },
+      )
+      return
+    }
     await ElMessageBox.confirm('提交后该填写链接将锁定，不能继续修改。确认提交给尽调团队？', '提交资料', { type: 'warning' })
     hydrate(await api.publicFill.submit(token)); ElMessage.success('资料已提交，感谢配合')
   } catch (error) { if (error !== 'cancel' && error !== 'close') ElMessage.error(apiMessage(error)) }
@@ -101,14 +111,14 @@ onBeforeUnmount(() => { clearInterval(timer); window.removeEventListener('before
   <main class="public-fill-page" v-loading="loading">
     <header class="public-fill-header">
       <div class="brand"><span class="brand-mark">F</span><span><b>FOF 尽调资料填写</b><small>SECURE QUESTIONNAIRE</small></span></div>
-      <el-tag v-if="report" :type="disabled ? 'success' : 'warning'" effect="plain">{{ disabled ? '已提交' : '填写中' }}</el-tag>
+      <el-tag v-if="report" :type="disabled ? 'info' : 'warning'" effect="plain">{{ disabled ? '公司方已禁止修改' : '允许填写' }}</el-tag>
     </header>
 
     <section v-if="report" class="page-wide">
       <div class="page-heading">
         <div><span class="eyebrow">Due Diligence Questionnaire</span><h1>{{ report.title }}</h1><p>{{ report.manager_name }} · {{ report.product_names.join('、') }} · {{ templateLabel[report.template_type] }}</p></div>
       </div>
-      <el-alert v-if="disabled" title="资料已经提交。如需修改，请联系尽调团队重新生成填写链接。" type="success" :closable="false" show-icon style="margin-bottom:16px" />
+      <el-alert v-if="disabled" title="当前修改权限已关闭。如需补充或更正，请联系公司尽调人员重新开放修改权限。" type="info" :closable="false" show-icon style="margin-bottom:16px" />
       <el-alert v-else :title="`链接有效期至 ${new Date(report.expires_at).toLocaleString('zh-CN')}；系统每 30 秒自动保存。`" type="info" :closable="false" show-icon style="margin-bottom:16px" />
 
       <div class="surface editor-shell">
@@ -121,14 +131,15 @@ onBeforeUnmount(() => { clearInterval(timer); window.removeEventListener('before
         </div>
 
         <el-tabs v-model="activeTab" class="editor-tabs">
-          <el-tab-pane name="basic" label="基本信息"><section class="field-section"><h2 class="field-section-heading">报告与封面信息</h2><el-form label-position="top"><div class="field-grid"><el-form-item label="管理人名称"><el-input :model-value="report.manager_name" disabled /></el-form-item><el-form-item label="关联产品"><el-input :model-value="report.product_names.join('、')" disabled /></el-form-item><el-form-item label="填报联系人 / 调查人"><el-input v-model="content.cover_investigator" :disabled="disabled" /></el-form-item><el-form-item label="报告日期"><el-date-picker v-model="content.cover_report_date" type="date" value-format="YYYY.MM.DD" format="YYYY.MM.DD" :disabled="disabled" style="width:100%" /></el-form-item></div></el-form><FieldGroup v-if="otherCoverFields.length" :fields="otherCoverFields" :content="content" :disabled="disabled" /><h2 class="field-section-heading" style="margin-top:22px">补充说明</h2><div class="question-field"><label>尽调结论或补充说明</label><el-input v-model="conclusion" type="textarea" :rows="5" :disabled="disabled" /></div><div class="question-field"><label>主动披露风险项</label><div v-for="(item,index) in riskItems" :key="index" style="display:flex;gap:8px;margin-bottom:8px"><el-input v-model="riskItems[index]" :disabled="disabled" /><el-button :disabled="disabled" @click="removeRisk(index)">移除</el-button></div><el-button :disabled="disabled" @click="addRisk">添加风险项</el-button></div></section></el-tab-pane>
+          <el-tab-pane name="basic" label="基本信息"><section class="field-section"><h2 class="field-section-heading">报告与封面信息</h2><el-form label-position="top"><div class="field-grid"><el-form-item label="管理人名称 *"><el-input :model-value="report.manager_name" disabled /></el-form-item><el-form-item label="关联产品 *"><el-input :model-value="report.product_names.join('、')" disabled /></el-form-item><el-form-item label="填报联系人 / 调查人 *"><el-input v-model="content.cover_investigator" :disabled="disabled" /></el-form-item><el-form-item label="报告日期 *"><el-date-picker v-model="content.cover_report_date" type="date" value-format="YYYY.MM.DD" format="YYYY.MM.DD" :disabled="disabled" style="width:100%" /></el-form-item></div></el-form><FieldGroup v-if="otherCoverFields.length" :fields="otherCoverFields" :content="content" :disabled="disabled" /><h2 class="field-section-heading" style="margin-top:22px">补充说明</h2><div class="question-field"><label>尽调结论或补充说明</label><el-input v-model="conclusion" type="textarea" :rows="5" :disabled="disabled" /></div><div class="question-field"><label>主动披露风险项</label><div v-for="(item,index) in riskItems" :key="index" style="display:flex;gap:8px;margin-bottom:8px"><el-input v-model="riskItems[index]" :disabled="disabled" /><el-button :disabled="disabled" @click="removeRisk(index)">移除</el-button></div><el-button :disabled="disabled" @click="addRisk">添加风险项</el-button></div></section></el-tab-pane>
           <el-tab-pane name="team" label="团队与组织"><section class="field-section"><FieldGroup :fields="teamFields" :content="content" :disabled="disabled" /><ImageUploader :public-token="token" :fields="imageFields.filter((item: ManifestField) => fieldSection(item) === 1)" :content="content" :disabled="disabled" @changed="syncImage" /></section></el-tab-pane>
           <el-tab-pane name="strategy" label="策略"><section class="field-section"><el-alert v-if="strategyMissing" title="请至少选择一种投资策略" type="error" :closable="false" show-icon style="margin-bottom:14px" /><StrategyEditor :fields="fields" :content="content" :disabled="disabled" :auto-strategy-keys="report.auto_strategy_keys" /><h2 class="field-section-heading" style="margin-top:22px">产品与策略通用问题</h2><FieldGroup :fields="strategyQaFields" :content="content" :disabled="disabled" /><ImageUploader :public-token="token" :fields="imageFields.filter((item: ManifestField) => fieldSection(item) === 2)" :content="content" :disabled="disabled" @changed="syncImage" /></section></el-tab-pane>
           <el-tab-pane name="risk" label="风控"><section class="field-section"><FieldGroup :fields="riskFields" :content="content" :disabled="disabled" /></section></el-tab-pane>
           <el-tab-pane name="compliance" label="合规与附件"><section class="field-section"><FieldGroup :fields="complianceFields" :content="content" :disabled="disabled" /><ImageUploader :public-token="token" :fields="imageFields.filter((item: ManifestField) => (fieldSection(item) || 0) >= 4)" :content="content" :disabled="disabled" @changed="syncImage" /></section></el-tab-pane>
-          <el-tab-pane name="tables" label="数据表格"><section class="field-section"><TableEditor :fields="tableFields" :content="content" :disabled="disabled" /></section></el-tab-pane>
+          <el-tab-pane name="tables" label="数据表格"><section class="field-section"><TableEditor :fields="tableFields" :content="content" :template-type="report.template_type" :disabled="disabled" /></section></el-tab-pane>
         </el-tabs>
       </div>
+      <p class="required-note"><span>*</span> 为必填项；标有“（如有）”的项目可选填。</p>
     </section>
     <el-result v-else-if="!loading" icon="error" title="无法打开填写链接" :sub-title="saveError" />
   </main>

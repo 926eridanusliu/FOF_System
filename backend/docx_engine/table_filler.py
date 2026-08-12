@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+import re
 
 from lxml import etree
 
@@ -31,6 +32,82 @@ class TableFiller(BaseFiller):
             )
         except Exception as exc:
             return self.result(False, field, value, field, message=str(exc))
+
+    def resize_dynamic_rows(
+        self,
+        table: int,
+        rows: list[dict],
+        *,
+        start_row: int,
+        template_rows: int,
+        columns: list[dict],
+    ):
+        """Fit a dynamic table to submitted rows while preserving template styling."""
+        results = []
+        if not rows:
+            return results
+        try:
+            tbl = self.package.body.xpath("./w:tbl", namespaces=self.package.NS)[table - 1]
+            table_rows = tbl.xpath("./w:tr", namespaces=self.package.NS)
+            keep = min(len(rows), template_rows)
+            if keep < template_rows:
+                removed = table_rows[start_row + keep:start_row + template_rows]
+                paragraph_count = sum(
+                    len(row.xpath(".//w:p", namespaces=self.package.NS)) for row in removed
+                )
+                for row in removed:
+                    tbl.remove(row)
+                result = self.result(
+                    True,
+                    f"table_{table}_trimmed_rows",
+                    template_rows - keep,
+                    f"table:{table}",
+                )
+                result.expected_paragraph_delta = -paragraph_count
+                results.append(result)
+
+            overflow = rows[template_rows:]
+            if not overflow:
+                return results
+            table_rows = tbl.xpath("./w:tr", namespaces=self.package.NS)
+            template = table_rows[start_row + template_rows - 1]
+            for offset, values in enumerate(overflow, template_rows):
+                clone = deepcopy(template)
+                for bookmark in clone.xpath(".//w:bookmarkStart | .//w:bookmarkEnd", namespaces=self.package.NS):
+                    bookmark.getparent().remove(bookmark)
+                cells = clone.xpath("./w:tc", namespaces=self.package.NS)
+                for column in columns:
+                    col = int(column["col"])
+                    if col >= len(cells):
+                        continue
+                    cell = cells[col]
+                    text_nodes = cell.xpath(".//w:t", namespaces=self.package.NS)
+                    value = values.get(str(col), values.get(col, ""))
+                    string = "" if value is None else str(value)
+                    if column.get("input") == "percent" and string and not string.endswith(("%", "％")):
+                        string = f"{string}%"
+                    suffix = str(column.get("output_suffix", ""))
+                    if suffix and string and re.fullmatch(r"[+-]?\d+(?:\.\d+)?", string):
+                        string = f"{string}{suffix}"
+                    if text_nodes:
+                        text_nodes[0].text = string
+                        if string.startswith(" ") or string.endswith(" "):
+                            text_nodes[0].set("{http://www.w3.org/XML/1998/namespace}space", "preserve")
+                        for node in text_nodes[1:]:
+                            node.text = ""
+                    else:
+                        paragraphs = cell.xpath("./w:p", namespaces=self.package.NS)
+                        paragraph = paragraphs[0] if paragraphs else etree.SubElement(cell, self.package.qn("p"))
+                        run = etree.SubElement(paragraph, self.package.qn("r"))
+                        text = etree.SubElement(run, self.package.qn("t"))
+                        text.text = string
+                tbl.append(clone)
+                result = self.result(True, f"table_{table}_dynamic_row_{offset}", values, f"table:{table}; row:{start_row + offset}")
+                result.expected_paragraph_delta = len(clone.xpath(".//w:p", namespaces=self.package.NS))
+                results.append(result)
+        except Exception as exc:
+            results.append(self.result(False, f"table_{table}_dynamic_rows", rows, f"table:{table}", message=str(exc)))
+        return results
 
     def merge(
         self,

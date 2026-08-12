@@ -113,6 +113,22 @@ export interface ManifestField {
 
 export interface Manifest { bookmarks: ManifestField[] }
 
+export type TableMode = 'key_value' | 'dynamic' | 'fixed'
+export type TableInputType = 'text' | 'textarea' | 'integer' | 'number' | 'percent' | 'date' | 'year' | 'email' | 'phone' | 'url'
+export interface TableColumnDefinition { col: number; label: string; input: TableInputType; unit?: string }
+export interface TableDefinition {
+  title: string
+  description: string
+  mode: TableMode
+  start_row: number
+  template_rows: number
+  columns: TableColumnDefinition[]
+  row_labels?: Record<string, string>
+  row_input_types?: Record<string, TableInputType>
+  optional_rows?: number[]
+  strategy_keys?: string[]
+}
+
 export type StrategyScaleGroup = 'bond' | 'cta_t0' | 'other'
 export type ManagerPhilosophyLevel = 'complete' | 'mature' | 'clear' | 'weak'
 export type IncentiveLevel = 'long_term' | 'clear' | 'basic' | 'none'
@@ -174,6 +190,8 @@ export interface ReportScorecard {
   detected_columns: { date?: string | null; nav?: string | null; benchmark?: string | null }
   nav_preview: Array<Record<string, unknown>>
   calculation_inputs: Partial<ScorecardCalculationInput>
+  manual_scores: Record<string, number>
+  template_items: ScorecardTemplateItem[]
   metrics: Record<string, unknown>
   score_rows: ScorecardRow[]
   quantitative_score: number | null
@@ -182,6 +200,20 @@ export interface ReportScorecard {
   total_score: number | null
   admitted: boolean | null
   calculated_at: string | null
+}
+
+export interface ScorecardTemplateItem {
+  key: string
+  category: string
+  indicator: string
+  maximum: number | null
+  cell: string
+  take_higher?: boolean
+}
+
+export interface ScorecardGenerateResult {
+  filename: string
+  download_url: string
 }
 
 export interface ReportVersionSummary {
@@ -238,6 +270,7 @@ export interface ReportInvitation {
   created_at: string
   last_saved_at: string | null
   fill_url: string | null
+  can_edit: boolean
 }
 
 export interface PublicReport {
@@ -251,4 +284,5 @@ export interface PublicReport {
   expires_at: string
   submitted_at: string | null
   auto_strategy_keys: string[]
+  can_edit: boolean
 }

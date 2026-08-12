@@ -17,6 +17,9 @@ STRATEGY_BRANCHES: dict[str, str | None] = {
     "cover_strategy_futures_quant_trend": "cta",
     "cover_strategy_futures_discretionary": "cta",
     "cover_strategy_composite": None,
+    # Stored on products so the selection can flow into the report cover's
+    # free-text "其他投资策略" slot without introducing an unknown report field.
+    "cover_strategy_other": None,
 }
 
 STRATEGY_KEYS = frozenset(STRATEGY_BRANCHES)

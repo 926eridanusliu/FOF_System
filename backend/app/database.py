@@ -3,7 +3,7 @@ from collections.abc import Generator
 from pathlib import Path
 
 from dotenv import load_dotenv
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine, event, inspect, text
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 from app.storage import DATA_DIR
@@ -47,6 +47,20 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
 class Base(DeclarativeBase):
     """Base class inherited by all SQLAlchemy database models."""
+
+
+def upgrade_existing_schema() -> None:
+    """Apply the small, backwards-compatible upgrade needed by existing installs."""
+    inspector = inspect(engine)
+    if "report_invitations" not in inspector.get_table_names():
+        return
+    columns = {item["name"] for item in inspector.get_columns("report_invitations")}
+    if "can_edit" not in columns:
+        default = "1" if DATABASE_URL.startswith("sqlite") else "TRUE"
+        with engine.begin() as connection:
+            connection.execute(text(
+                f"ALTER TABLE report_invitations ADD COLUMN can_edit BOOLEAN NOT NULL DEFAULT {default}"
+            ))
 
 
 def get_db() -> Generator[Session, None, None]:

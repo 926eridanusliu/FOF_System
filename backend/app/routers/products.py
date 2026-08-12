@@ -7,7 +7,7 @@ from app.database import get_db
 from app.models.manager import Manager
 from app.models.product import Product, ProductStrategy
 from app.models.report import DueDiligenceReport, ReportProduct
-from app.schemas.product import ProductCreate, ProductRead, ProductUpdate
+from app.schemas.product import ProductBatchCreate, ProductCreate, ProductRead, ProductUpdate
 from app.services.deletions import is_deleted, visible_entity
 
 
@@ -53,6 +53,40 @@ def create_product(payload: ProductCreate, db: Session = Depends(get_db)) -> Pro
     _commit(db)
     db.refresh(product)
     return product
+
+
+@router.post("/batch", response_model=list[ProductRead], status_code=status.HTTP_201_CREATED)
+def create_products_batch(
+    payload: ProductBatchCreate, db: Session = Depends(get_db)
+) -> list[Product]:
+    _ensure_manager(payload.manager_id, db)
+    names = [item.name for item in payload.products]
+    existing = list(db.scalars(
+        select(Product.name).where(
+            Product.manager_id == payload.manager_id,
+            Product.name.in_(names),
+        )
+    ))
+    if existing:
+        raise HTTPException(
+            status_code=409,
+            detail=f"该管理人下已存在同名产品：{'、'.join(existing)}",
+        )
+    created = []
+    for item in payload.products:
+        product = Product(
+            manager_id=payload.manager_id,
+            name=item.name,
+            product_type=payload.product_type,
+            established_date=item.established_date,
+        )
+        db.add(product)
+        _set_strategies(product, payload.strategy_keys, db)
+        created.append(product)
+    _commit(db)
+    for product in created:
+        db.refresh(product)
+    return created
 
 
 @router.get("", response_model=list[ProductRead])

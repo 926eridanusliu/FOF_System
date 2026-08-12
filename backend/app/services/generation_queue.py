@@ -39,16 +39,13 @@ def _run_generation_job(job_id: int, bind: Engine) -> None:
 
         try:
             snapshot_content = dict(job.content_snapshot or {})
-            scorecard_snapshot = snapshot_content.pop("__scorecard__", None)
+            snapshot_content.pop("__scorecard__", None)
             snapshot = SimpleNamespace(
                 id=job.report_id,
                 template_type=job.template_type,
                 content=snapshot_content,
             )
-            generated = generate_document(  # type: ignore[arg-type]
-                snapshot,
-                scorecard_snapshot=scorecard_snapshot,
-            )
+            generated = generate_document(snapshot)  # type: ignore[arg-type]
         except Exception as exc:  # Worker boundary: persist any generator failure for polling clients.
             db.rollback()
             failed = db.get(ReportGenerationJob, job_id)

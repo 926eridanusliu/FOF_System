@@ -1,0 +1,267 @@
+{
+  "private_fund": {
+    "1": {
+      "title": "基金管理方基本信息",
+      "description": "填写管理人的公司登记、规模、人员、风控及尽调联系人信息。",
+      "mode": "key_value",
+      "start_row": 0,
+      "template_rows": 29,
+      "columns": [{"col": 1, "label": "填写内容", "input": "text"}],
+      "row_labels": {
+        "0": "公司名称",
+        "1": "曾用名（如有）",
+        "2": "成立时间/注册资本/实缴资本",
+        "3": "注册地址/实际办公地址",
+        "4": "公司法人",
+        "5": "主营范围",
+        "6": "基金业协会备案编号/备案时间",
+        "7": "是否基金业协会会员（获得时间）",
+        "8": "最新资产管理总规模（统计截止日）",
+        "9": "总规模中管理人自有资金规模",
+        "10": "过去三年年末管理规模变动",
+        "11": "累计发行产品支数/存续产品支数",
+        "12": "因触及止损线而清盘的产品数量",
+        "13": "存续产品中净值大于1的产品比例",
+        "14": "投顾管理资产规模（如有）",
+        "15": "正式员工总数（是否包括全资子公司）",
+        "16": "投研团队人数",
+        "17": "近一年投研团队人数变化",
+        "18": "是否配备专职合规风控负责人",
+        "19": "合规风控负责人从业年限",
+        "20": "合规风控团队人数",
+        "21": "是否入选其他金融机构白名单（如有，请列示投资额或代销额最大的五家）",
+        "22": "能否为FOF母基金提供每日估值",
+        "23": "能否按季提供四级估值表用于穿透合规审核（是否豁免提供）",
+        "24": "尽调联系人",
+        "25": "职级",
+        "26": "电话",
+        "27": "邮件",
+        "28": "邮寄地址"
+      },
+      "row_input_types": {
+        "12": "integer", "13": "percent", "15": "integer", "16": "integer",
+        "19": "integer", "20": "integer", "26": "phone", "27": "email"
+      },
+      "optional_rows": [1, 14]
+    },
+    "2": {
+      "title": "管理人各部门员工数量及主要职能",
+      "description": "每行填写一个部门；可按管理人的实际部门数量增删。",
+      "mode": "dynamic",
+      "start_row": 1,
+      "template_rows": 5,
+      "columns": [
+        {"col": 0, "label": "部门名称", "input": "text"},
+        {"col": 1, "label": "部门人数", "input": "integer", "unit": "人"},
+        {"col": 2, "label": "部门主要职能", "input": "textarea"},
+        {"col": 3, "label": "负责人", "input": "text"}
+      ]
+    },
+    "3": {
+      "title": "管理人股权结构",
+      "description": "每行填写一名股东及其股权比例。",
+      "mode": "dynamic",
+      "start_row": 1,
+      "template_rows": 5,
+      "columns": [
+        {"col": 0, "label": "股东名称", "input": "text"},
+        {"col": 1, "label": "股权比例", "input": "percent", "unit": "%"}
+      ]
+    },
+    "4": {
+      "title": "历年员工数量及核心团队变动",
+      "description": "按年度填写员工总数和关键人员增减情况。",
+      "mode": "dynamic",
+      "start_row": 1,
+      "template_rows": 6,
+      "columns": [
+        {"col": 0, "label": "年度", "input": "year"},
+        {"col": 1, "label": "公司员工数目", "input": "integer", "unit": "人"},
+        {"col": 2, "label": "核心团队变动情况说明", "input": "textarea"}
+      ]
+    },
+    "5": {
+      "title": "核心成员信息",
+      "description": "每行填写一名关键岗位人员或投研团队成员。",
+      "mode": "dynamic",
+      "start_row": 1,
+      "template_rows": 5,
+      "columns": [
+        {"col": 0, "label": "姓名", "input": "text"},
+        {"col": 1, "label": "职位", "input": "text"},
+        {"col": 2, "label": "入职日期", "input": "date"},
+        {"col": 3, "label": "教育背景", "input": "textarea"},
+        {"col": 4, "label": "职业经历（包括从业年限、历史管理规模等）", "input": "textarea"}
+      ]
+    },
+    "6": {
+      "title": "制度体系",
+      "description": "按制度类别填写现行制度名称；类别固定，不需要增删。",
+      "mode": "fixed",
+      "start_row": 1,
+      "template_rows": 5,
+      "columns": [{"col": 1, "label": "制度名称列表", "input": "textarea"}],
+      "row_labels": {
+        "1": "公司管理",
+        "2": "投资交易",
+        "3": "合规风控",
+        "4": "信息披露",
+        "5": "其他制度"
+      }
+    },
+    "7": {
+      "title": "股票主观多头代表产品",
+      "description": "仅在选择股票主观多头策略时填写，每行一个代表产品。",
+      "mode": "dynamic",
+      "start_row": 1,
+      "template_rows": 2,
+      "strategy_keys": ["cover_strategy_stock_discretionary"],
+      "columns": [
+        {"col": 0, "label": "产品名称", "input": "text"},
+        {"col": 1, "label": "成立时间", "input": "date"},
+        {"col": 2, "label": "年化收益", "input": "percent", "unit": "%"},
+        {"col": 3, "label": "最大回撤", "input": "percent", "unit": "%"},
+        {"col": 4, "label": "存续规模", "input": "number", "unit": "亿元", "output_suffix": "亿"}
+      ]
+    },
+    "8": {
+      "title": "量化策略代表产品",
+      "description": "适用于指数增强、股票量化、市场中性及T0策略，每行一个代表产品。",
+      "mode": "dynamic",
+      "start_row": 1,
+      "template_rows": 3,
+      "strategy_keys": [
+        "cover_strategy_stock_index_enhanced",
+        "cover_strategy_stock_quant",
+        "cover_strategy_market_neutral",
+        "cover_strategy_t0"
+      ],
+      "columns": [
+        {"col": 0, "label": "产品名称", "input": "text"},
+        {"col": 1, "label": "成立时间", "input": "date"},
+        {"col": 2, "label": "年化收益", "input": "percent", "unit": "%"},
+        {"col": 3, "label": "最大回撤", "input": "percent", "unit": "%"},
+        {"col": 4, "label": "存续规模", "input": "number", "unit": "亿元", "output_suffix": "亿"}
+      ]
+    },
+    "9": {
+      "title": "CTA策略代表产品",
+      "description": "适用于量化CTA和主观CTA策略，每行一个代表产品。",
+      "mode": "dynamic",
+      "start_row": 1,
+      "template_rows": 3,
+      "strategy_keys": [
+        "cover_strategy_futures_quant_trend",
+        "cover_strategy_futures_discretionary"
+      ],
+      "columns": [
+        {"col": 0, "label": "产品名称", "input": "text"},
+        {"col": 1, "label": "成立时间", "input": "date"},
+        {"col": 2, "label": "年化收益", "input": "percent", "unit": "%"},
+        {"col": 3, "label": "最大回撤", "input": "percent", "unit": "%"},
+        {"col": 4, "label": "存续规模", "input": "number", "unit": "亿元", "output_suffix": "亿"}
+      ]
+    },
+    "10": {
+      "title": "债券策略代表产品",
+      "description": "适用于纯债、固收增强、固收复合及可转债策略，每行一个代表产品。",
+      "mode": "dynamic",
+      "start_row": 1,
+      "template_rows": 3,
+      "strategy_keys": [
+        "cover_strategy_bond_pure",
+        "cover_strategy_bond_enhanced",
+        "cover_strategy_bond_composite",
+        "cover_strategy_convertible_bond"
+      ],
+      "columns": [
+        {"col": 0, "label": "产品名称", "input": "text"},
+        {"col": 1, "label": "成立时间", "input": "date"},
+        {"col": 2, "label": "年化收益", "input": "percent", "unit": "%"},
+        {"col": 3, "label": "最大回撤", "input": "percent", "unit": "%"},
+        {"col": 4, "label": "存续规模", "input": "number", "unit": "亿元", "output_suffix": "亿"}
+      ]
+    },
+    "11": {
+      "title": "期权策略代表产品",
+      "description": "仅在选择期货期权套利策略时填写，每行一个代表产品。",
+      "mode": "dynamic",
+      "start_row": 1,
+      "template_rows": 3,
+      "strategy_keys": ["cover_strategy_futures_options_arbitrage"],
+      "columns": [
+        {"col": 0, "label": "产品名称", "input": "text"},
+        {"col": 1, "label": "成立时间", "input": "date"},
+        {"col": 2, "label": "年化收益", "input": "percent", "unit": "%"},
+        {"col": 3, "label": "最大回撤", "input": "percent", "unit": "%"},
+        {"col": 4, "label": "存续规模", "input": "number", "unit": "亿元", "output_suffix": "亿"}
+      ]
+    },
+    "12": {
+      "title": "管理人各类产品管理概况",
+      "description": "每行填写一种策略及一只代表性产品的管理概况。",
+      "mode": "dynamic",
+      "start_row": 2,
+      "template_rows": 5,
+      "columns": [
+        {"col": 0, "label": "策略类型", "input": "text"},
+        {"col": 1, "label": "分策略总管理规模", "input": "number", "unit": "亿元", "output_suffix": "亿"},
+        {"col": 2, "label": "代表产品名称", "input": "text"},
+        {"col": 3, "label": "投资经理", "input": "text"},
+        {"col": 4, "label": "成立时间", "input": "date"},
+        {"col": 5, "label": "代表产品存续规模", "input": "number", "unit": "亿元", "output_suffix": "亿"},
+        {"col": 6, "label": "代表产品年化收益率", "input": "percent", "unit": "%"}
+      ]
+    }
+  },
+  "licensed_institution": {
+    "1": {
+      "title": "持牌金融机构基本信息",
+      "description": "填写机构登记、资产管理规模、产品及基金经理信息。",
+      "mode": "key_value",
+      "start_row": 0,
+      "template_rows": 12,
+      "columns": [{"col": 1, "label": "填写内容", "input": "text"}],
+      "row_labels": {
+        "0": "公司名称",
+        "1": "注册地",
+        "2": "注册资本",
+        "3": "注册地址",
+        "4": "成立时间",
+        "5": "公司法人",
+        "6": "主营范围",
+        "7": "公司主页",
+        "8": "资产管理总规模合计（亿元）",
+        "9": "非货基管理规模合计（亿元）",
+        "10": "公开产品支数",
+        "11": "旗下基金经理人数"
+      },
+      "row_input_types": {
+        "2": "number", "4": "date", "7": "url", "8": "number",
+        "9": "number", "10": "integer", "11": "integer"
+      }
+    },
+    "2": {
+      "title": "股权结构",
+      "description": "每行填写一名股东及其股权比例。",
+      "mode": "dynamic",
+      "start_row": 1,
+      "template_rows": 5,
+      "columns": [
+        {"col": 0, "label": "股东名称", "input": "text"},
+        {"col": 1, "label": "股权比例", "input": "percent", "unit": "%"}
+      ]
+    },
+    "3": {
+      "title": "产品策略类型与存续规模",
+      "description": "每行填写一种产品策略类型及其存续总规模。",
+      "mode": "dynamic",
+      "start_row": 1,
+      "template_rows": 3,
+      "columns": [
+        {"col": 0, "label": "产品策略类型", "input": "text"},
+        {"col": 1, "label": "存续总规模", "input": "number", "unit": "亿元"}
+      ]
+    }
+  }
+}

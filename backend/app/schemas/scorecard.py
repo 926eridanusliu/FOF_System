@@ -49,6 +49,15 @@ class ScorecardCalculateRequest(BaseModel):
     qualitative: QualitativeScoreInputs
 
 
+class ScorecardManualSaveRequest(BaseModel):
+    scores: dict[str, float]
+
+
+class ScorecardGenerateResponse(BaseModel):
+    filename: str
+    download_url: str
+
+
 class ScorecardRead(BaseModel):
     report_id: int
     nav_original_filename: str | None = None
@@ -57,6 +66,8 @@ class ScorecardRead(BaseModel):
     detected_columns: dict[str, Any] = Field(default_factory=dict)
     nav_preview: list[dict[str, Any]] = Field(default_factory=list)
     calculation_inputs: dict[str, Any] = Field(default_factory=dict)
+    manual_scores: dict[str, float] = Field(default_factory=dict)
+    template_items: list[dict[str, Any]] = Field(default_factory=list)
     metrics: dict[str, Any] = Field(default_factory=dict)
     score_rows: list[dict[str, Any]] = Field(default_factory=list)
     quantitative_score: float | None = None

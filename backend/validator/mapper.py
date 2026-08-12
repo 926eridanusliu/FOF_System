@@ -43,11 +43,20 @@ def chinese_date(value: Any) -> str:
     return f"{year}年{int(month)}月{int(day)}日"
 
 
+def dotted_date(value: Any) -> str:
+    text = stringify(value).strip()
+    match = re.fullmatch(r"(\d{4})[-./年](\d{1,2})[-./月](\d{1,2})日?", text)
+    if not match:
+        return text
+    year, month, day = match.groups()
+    return f"{year}.{int(month)}.{int(day)}"
+
+
 def whitelist_names(value: Any, limit: int = 5) -> str:
     text = stringify(value).strip()
     text = re.sub(r"^(?:有|是)\s*[：:、，,]?\s*", "", text)
     names = [part.strip() for part in re.split(r"[、，,；;\\n]+", text) if part.strip()]
-    return "、".join(names[:limit])
+    return f"是，{'、'.join(names[:limit])}" if names else ""
 
 
 class InputDataMapper:
@@ -75,6 +84,8 @@ class InputDataMapper:
         ):
             mapped = {}
             for key, value in data.items():
+                if key.startswith("__") or key in {"report_type", "attachment_type", "template_type"}:
+                    continue
                 if key.startswith("cover_strategy_") and key != "cover_strategy_other_text":
                     mapped[key] = "☑" if value in {True, 1, "1", "true", "True", "是", "☑"} else "□"
                 elif key.startswith("image_") or "credit_screenshot" in key:
@@ -96,7 +107,7 @@ class InputDataMapper:
             "cover_manager_name": stringify(header.get("manager_name")),
             "cover_product_name": stringify(header.get("product_name")),
             "cover_investigator": stringify(header.get("investigator")),
-            "cover_report_date": stringify(header.get("report_date")),
+            "cover_report_date": dotted_date(header.get("report_date")),
             "cover_strategy_other_text": stringify(header.get("other_strategy_desc")),
         }
         selected = set(header.get("strategy_type") or [])
@@ -116,16 +127,9 @@ class InputDataMapper:
         ]
         for row, key in enumerate(basic_keys):
             values[f"table_1_row{row}_col1"] = stringify(basic.get(key))
-        for row in range(1, 6):
-            item = (report.get("shareholders") or [{}] * 5)
-            item = item[row - 1] if row - 1 < len(item) else {}
-            values[f"table_2_row{row}_col0"] = stringify(item.get("name"))
-            values[f"table_2_row{row}_col1"] = stringify(item.get("ratio"))
+        self._map_rows(values, 2, report.get("shareholders", []), ["name", "ratio"], 1, 5)
         breakdown = get(report, "product.strategy_breakdown", []) or []
-        for row in range(1, 4):
-            item = breakdown[row - 1] if row - 1 < len(breakdown) else {}
-            values[f"table_3_row{row}_col0"] = stringify(item.get("type"))
-            values[f"table_3_row{row}_col1"] = stringify(item.get("aum"))
+        self._map_rows(values, 3, breakdown, ["type", "aum"], 1, 3)
         values.update({
             "qa_section1_research_team": stringify(get(report, "team.description")),
             "qa_section2_strategy_logic": stringify(get(report, "product.strategy_overview")),
@@ -151,7 +155,7 @@ class InputDataMapper:
         table1 = [
             basic.get("company_name"),
             basic.get("former_name"),
-            combine(basic.get("established_date"), basic.get("registered_capital"),
+            combine(chinese_date(basic.get("established_date")), basic.get("registered_capital"),
             basic.get("paid_in_capital"), separator="/"),
             combine(basic.get("registered_address"), basic.get("actual_office_address"),
                     separator="/\n"),
@@ -211,7 +215,7 @@ class InputDataMapper:
         for col in range(2):
             values[f"table_6_row6_col{col}"] = ""
         if include_revision_fields:
-            report_date = chinese_date(get(data, "header.report_date"))
+            report_date = dotted_date(get(data, "header.report_date"))
             for table in range(1, 13):
                 values[f"table_{table}_data_cutoff_date"] = report_date
         self._private_product_tables(values, data)
@@ -221,6 +225,10 @@ class InputDataMapper:
     @staticmethod
     def _map_rows(values, table, rows, keys, start, count):
         rows = rows or []
+        values.setdefault("__dynamic_tables", {})[str(table)] = [
+            {str(col): stringify(item.get(key)) for col, key in enumerate(keys)}
+            for item in rows if isinstance(item, dict)
+        ]
         for row in range(start, start + count):
             item = rows[row - start] if row - start < len(rows) else {}
             for col, key in enumerate(keys):
@@ -239,6 +247,7 @@ class InputDataMapper:
                            ["name", "established", "annual_return", "max_dd", "aum"],
                            1, max_rows)
         overview = data.get("section_1_13_product_management", {}).get("strategy_overview", []) or []
+        dynamic_overview = []
         for row in range(2, 7):
             item = overview[row - 2] if row - 2 < len(overview) else {}
             product = (item.get("products") or [{}])[0]
@@ -249,6 +258,15 @@ class InputDataMapper:
             ]
             for col, value in enumerate(row_values):
                 values[f"table_12_row{row}_col{col}"] = stringify(value)
+        for item in overview:
+            product = (item.get("products") or [{}])[0]
+            row_values = [
+                item.get("strategy_type"), item.get("aum"), product.get("name"),
+                product.get("pm"), product.get("established"), product.get("aum"),
+                product.get("annual_return"),
+            ]
+            dynamic_overview.append({str(col): stringify(value) for col, value in enumerate(row_values)})
+        values.setdefault("__dynamic_tables", {})["12"] = dynamic_overview
 
     def _private_qa(self, values: dict, data: dict) -> None:
         overview = stringify(get(data, "section_1_1_text.company_overview"))
@@ -368,8 +386,8 @@ class InputDataMapper:
             "trading_system": ["trading_system_dev", "development_language",
                                "speed_hosting_acceleration_counter"],
             "trend_signal": ["trend_signal_mechanism"],
-            "position_sizing": ["signal_position_sizing"],
-            "research_platform_data": ["research_platform", "data_sources"],
+            "position_sizing": ["position_sizing_method", "signal_position_sizing"],
+            "research_platform_data": ["research_platform", "data_sources_used", "data_sources"],
             "factor_inventory": ["factor_count_classification"],
             "factor_entry": ["factor_entry_criteria"],
             "factor_universality": ["universality_requirement"],
@@ -387,7 +405,73 @@ class InputDataMapper:
             values[f"strat_cta_{suffix}"] = (
                 combine(*(managed.get(key) for key in keys)) if applicable else ""
             )
-        for prefix in ("quant", "bond", "option"):
-            # Inapplicable branches must remain empty. Applicable branches can be
-            # supplied directly as flat semantic bookmark data for exact control.
-            pass
+        branch_maps = {
+            "quant": ("quantitative", {
+                "methodology": ["quant_methodology"],
+                "stock_pool": ["stock_universe"],
+                "style_industry_exposure": ["exposure_constraints", "exposure_monitoring_freq"],
+                "holding_constraints": ["holdings_count", "holding_period_turnover", "single_stock_cap", "has_stop_loss"],
+                "benchmark_index": ["benchmark_index"],
+                "team_structure": ["quant_team_groups"],
+                "factor_sources": ["factor_source", "total_factors_in_pool"],
+                "factor_mix": ["active_factors_classification_weight", "factor_correlation_requirement"],
+                "factor_substrategy": ["factor_sub_strategy", "sub_strategy_count"],
+                "factor_entry": ["factor_entry_criteria", "factor_stability_requirement"],
+                "risk_profit_factor": ["risk_vs_alpha_factor"],
+                "machine_learning": ["uses_ml_dl"],
+                "ml_features_compute": ["ml_original_features", "ml_dim_reduction", "ml_base_learner", "ml_compute_resources"],
+                "ml_explainability": ["ml_interpretability", "ml_correlation_reduction"],
+                "capacity": ["strategy_capacity"],
+                "max_drawdown": ["nav_and_excess_max_dd"],
+                "research_trading_system": ["trading_systems"],
+                "enhanced_neutral_consistency": ["enhanced_vs_neutral_overlap"],
+                "neutral_hedging": ["neutral_hedging_instrument", "neutral_market_exposure", "neutral_exposure_monitoring_freq"],
+                "neutral_dynamic_position": ["neutral_dynamic_position"],
+                "basis_risk": ["basis_volatility_management"],
+                "competitive_advantage": ["competitive_advantage"],
+            }),
+            "bond": ("fixed_income", {
+                "investment_scope": ["investment_scope"],
+                "allocation_rating_concentration": ["allocation_and_min_rating", "top5_concentration"],
+                "leverage": ["avg_leverage", "max_leverage"],
+                "issuer_region_rating": ["issuer_type_region", "issuer_rating_requirement"],
+                "industry_price_duration_limits": ["industry_concentration_limit", "price_deviation_limit", "avg_duration"],
+                "blacklist": ["blacklist_and_avoidance"],
+                "credit_downshift": ["credit_downgrade_approach"],
+                "turnover_trading_system": ["trading_frequency", "trading_system"],
+                "repo_counterparties": ["repo_participation", "repo_top5_counterparties"],
+                "equity_exposure": ["equity_exposure_ratio"],
+                "local_government_bonds": ["urban_investment_bonds"],
+                "property_bonds": ["property_bonds"],
+                "performance_attribution": ["performance_attribution"],
+                "max_drawdown": ["max_drawdown_analysis"],
+                "market_outlook": ["market_outlook_short", "market_outlook_medium", "market_outlook_long"],
+                "competitive_advantage": ["competitive_advantage"],
+            }),
+            "option": ("options_arbitrage", {
+                "strategy_logic_weights": ["strategy_logic_and_sub_weights"],
+                "underlying_capital_allocation": ["instrument_selection_allocation"],
+                "short_option_ratio": ["short_option_ratio", "near_term_contracts"],
+                "volatility_forecast": ["volatility_forecast_method"],
+                "market_data_cycle": ["market_data_source", "intraday_data_period"],
+                "frequency_holding_pricing": ["trading_freq_holding_period", "pricing_model_freq"],
+                "hedging": ["hedging_method_freq"],
+                "greeks_tail_risk": ["risk_monitoring_greeks", "tail_risk_management"],
+                "position_holiday": ["position_management", "holiday_position_adjustment"],
+                "risk_system": ["risk_system_build_or_vendor"],
+                "stress_test": ["stress_test_scenarios"],
+                "trading_system": ["trading_system_type"],
+                "signal_pm_trader_roles": ["signal_decision", "pm_trader_division"],
+                "capacity": ["capacity_limit_factors"],
+                "market_suitability": ["favorable_vs_unfavorable_market"],
+                "top_drawdowns": ["top3_daily_drawdowns"],
+                "competitive_advantage": ["peer_comparison_advantage"],
+            }),
+        }
+        for prefix, (branch_name, field_map) in branch_maps.items():
+            branch = strategy.get(branch_name, {})
+            applicable = bool(branch.get("_applicable"))
+            for suffix, keys in field_map.items():
+                values[f"strat_{prefix}_{suffix}"] = (
+                    combine(*(branch.get(key) for key in keys)) if applicable else ""
+                )
