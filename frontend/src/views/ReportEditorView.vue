@@ -37,7 +37,7 @@ const imageFields = computed(() => fields.value.filter((item) => item.type === '
 const otherCoverFields = computed(() => fields.value.filter((item) => item.type === 'cover' && !['cover_manager_name','cover_product_name','cover_investigator','cover_report_date','cover_strategy_other_text'].includes(item.bookmark)))
 const investigatorMissing = computed(() => !String(content.cover_investigator || '').trim())
 const reportDateMissing = computed(() => !String(content.cover_report_date || '').trim())
-const strategyMissing = computed(() => !strategyOptions.some(([key]) => Boolean(content[key])))
+const strategyMissing = computed(() => !content.cover_strategy_other_text && !strategyOptions.some(([key]) => Boolean(content[key])))
 
 function hydrate(data: Report) {
   hydrating.value = true; report.value = data; title.value = data.title; conclusion.value = data.conclusion || ''; riskItems.value = [...data.risk_items]
@@ -178,6 +178,14 @@ async function revokeInvitation(id: number) {
   } catch (error) { if (error !== 'cancel' && error !== 'close') ElMessage.error(apiMessage(error)) }
 }
 
+async function setInvitationEdit(id: number, canEdit: boolean) {
+  try {
+    await api.reports.setInvitationEdit(reportId, id, canEdit)
+    invitations.value = await api.reports.listInvitations(reportId)
+    ElMessage.success(canEdit ? '已允许管理方继续修改' : '已禁止管理方修改')
+  } catch (error) { ElMessage.error(apiMessage(error)) }
+}
+
 async function syncImage(field: string, removed: boolean) {
   try {
     const server = await api.reports.get(reportId)
@@ -241,8 +249,8 @@ onBeforeRouteLeave(async () => {
             <el-form label-position="top">
               <div class="field-grid">
                 <el-form-item class="span-2" label="报告标题" required :error="!title.trim() ? '报告标题不能为空' : ''"><el-input v-model="title" :disabled="disabled" maxlength="255" show-word-limit /></el-form-item>
-                <el-form-item label="管理人名称"><el-input :model-value="manager?.name" disabled /></el-form-item>
-                <el-form-item label="关联产品"><el-input :model-value="String(content.cover_product_name || '')" disabled /></el-form-item>
+                <el-form-item label="管理人名称 *"><el-input :model-value="manager?.name" disabled /></el-form-item>
+                <el-form-item label="关联产品 *"><el-input :model-value="String(content.cover_product_name || '')" disabled /></el-form-item>
                 <el-form-item label="调查人" required :error="investigatorMissing ? '调查人不能为空' : ''"><el-input v-model="content.cover_investigator" :disabled="disabled" /></el-form-item>
                 <el-form-item label="报告日期" required :error="reportDateMissing ? '报告日期不能为空' : ''"><el-date-picker v-model="content.cover_report_date" type="date" value-format="YYYY.MM.DD" format="YYYY.MM.DD" :disabled="disabled" style="width:100%" /></el-form-item>
               </div>
@@ -257,7 +265,7 @@ onBeforeRouteLeave(async () => {
         <el-tab-pane name="strategy" label="策略"><section class="field-section"><h2 class="field-section-heading">策略选择与动态分支</h2><el-alert v-if="strategyMissing" title="请至少选择一种投资策略" type="error" :closable="false" show-icon style="margin-bottom:14px" /><el-alert v-if="report.auto_strategy_keys.length" title="标有“产品自动”的策略来自关联产品；你仍可手动补充其他策略。" type="info" :closable="false" style="margin-bottom:14px" /><StrategyEditor :fields="fields" :content="content" :disabled="disabled" :auto-strategy-keys="report.auto_strategy_keys" /><h2 class="field-section-heading" style="margin-top:22px">产品与策略通用问题</h2><FieldGroup :fields="strategyQaFields" :content="content" :disabled="disabled" /><ImageUploader :report-id="reportId" :fields="imageFields.filter((item: ManifestField) => fieldSection(item) === 2)" :content="content" :disabled="disabled" @changed="syncImage" /></section></el-tab-pane>
         <el-tab-pane name="risk" label="风控"><section class="field-section"><h2 class="field-section-heading">风险管理</h2><FieldGroup :fields="riskFields" :content="content" :disabled="disabled" /></section></el-tab-pane>
         <el-tab-pane name="compliance" label="合规与附件"><section class="field-section"><h2 class="field-section-heading">合规、信用与结论</h2><FieldGroup :fields="complianceFields" :content="content" :disabled="disabled" /><h2 v-if="imageFields.some((item: ManifestField) => (fieldSection(item) || 0) >= 4)" class="field-section-heading">信用截图</h2><ImageUploader :report-id="reportId" :fields="imageFields.filter((item: ManifestField) => (fieldSection(item) || 0) >= 4)" :content="content" :disabled="disabled" @changed="syncImage" /></section></el-tab-pane>
-        <el-tab-pane name="tables" label="数据表格"><section><h2 class="field-section-heading">模板表格内嵌编辑</h2><TableEditor :fields="tableFields" :content="content" :disabled="disabled" /></section></el-tab-pane>
+        <el-tab-pane name="tables" label="数据表格"><section><h2 class="field-section-heading">模板表格内嵌编辑</h2><TableEditor :key="report.updated_at" :fields="tableFields" :content="content" :template-type="report.template_type" :disabled="disabled" /></section></el-tab-pane>
         <el-tab-pane name="scorecard" label="准入评分卡"><ScorecardPanel :report-id="reportId" :disabled="disabled" /></el-tab-pane>
         <el-tab-pane name="history" label="版本历史">
           <VersionHistoryPanel
@@ -270,6 +278,7 @@ onBeforeRouteLeave(async () => {
         <el-tab-pane name="validation" label="校验"><section class="field-section"><h2 class="field-section-heading">提交前校验</h2><ValidationPanel :result="validation" /></section></el-tab-pane>
       </el-tabs>
     </div>
+    <p v-if="report" class="required-note"><span>*</span> 为必填项；标有“（如有）”的项目可选填。</p>
 
     <el-dialog v-model="jsonDialog" title="JSON 导入预览" width="680px">
       <div v-if="jsonPreview" class="stack">
@@ -291,7 +300,7 @@ onBeforeRouteLeave(async () => {
     </el-dialog>
 
     <el-dialog v-model="invitationDialog" title="管理人安全填写链接" width="720px">
-      <el-alert title="链接只允许访问这一份草稿；到期、撤销或管理人提交后将不能继续修改。" type="info" :closable="false" show-icon />
+      <el-alert title="链接只允许访问这一份草稿；公司方可随时允许或禁止管理方修改。" type="info" :closable="false" show-icon />
       <div style="display:flex;gap:10px;align-items:center;margin:18px 0">
         <span>有效天数</span><el-input-number v-model="invitationDays" :min="1" :max="30" />
         <el-button type="primary" @click="createInvitation">生成新链接</el-button>
@@ -300,8 +309,9 @@ onBeforeRouteLeave(async () => {
       <el-table :data="invitations" style="margin-top:16px">
         <el-table-column label="创建时间" min-width="170"><template #default="{ row }">{{ new Date(row.created_at).toLocaleString('zh-CN') }}</template></el-table-column>
         <el-table-column label="到期时间" min-width="170"><template #default="{ row }">{{ new Date(row.expires_at).toLocaleString('zh-CN') }}</template></el-table-column>
-        <el-table-column label="状态" width="110"><template #default="{ row }">{{ row.revoked_at ? '已撤销' : row.submitted_at ? '已提交' : '填写中' }}</template></el-table-column>
-        <el-table-column label="操作" width="90"><template #default="{ row }"><el-button v-if="!row.revoked_at" link type="danger" @click="revokeInvitation(row.id)">撤销</el-button></template></el-table-column>
+        <el-table-column label="修改权限" width="130"><template #default="{ row }"><el-tag :type="row.can_edit ? 'success' : 'info'" effect="plain">{{ row.can_edit ? '允许修改' : '禁止修改' }}</el-tag></template></el-table-column>
+        <el-table-column label="状态" width="110"><template #default="{ row }">{{ row.revoked_at ? '已撤销' : row.submitted_at ? '已提交' : '未提交' }}</template></el-table-column>
+        <el-table-column label="操作" width="210"><template #default="{ row }"><el-button v-if="!row.revoked_at" link type="primary" @click="setInvitationEdit(row.id, !row.can_edit)">{{ row.can_edit ? '禁止修改' : '允许修改' }}</el-button><el-button v-if="!row.revoked_at" link type="danger" @click="revokeInvitation(row.id)">撤销</el-button></template></el-table-column>
       </el-table>
     </el-dialog>
   </section>

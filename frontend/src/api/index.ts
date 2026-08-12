@@ -62,6 +62,12 @@ export const api = {
   products: {
     list: (managerId?: number) => request<Product[]>(`/api/products?limit=200${managerId ? `&manager_id=${managerId}` : ''}`),
     create: (body: Partial<Product>) => request<Product>('/api/products', json('POST', body)),
+    createBatch: (body: {
+      manager_id: number
+      product_type: string | null
+      strategy_keys: string[]
+      products: Array<{ name: string; established_date: string | null }>
+    }) => request<Product[]>('/api/products/batch', json('POST', body)),
     update: (id: number, body: Partial<Product>) => request<Product>(`/api/products/${id}`, json('PUT', body)),
     remove: (id: number) => request<void>(`/api/products/${id}`, { method: 'DELETE' }),
   },
@@ -108,6 +114,12 @@ export const api = {
       `/api/reports/${id}/scorecard/calculate`,
       json('POST', body),
     ),
+    saveManualScorecard: (id: number, scores: Record<string, number>) => request<ReportScorecard>(
+      `/api/reports/${id}/scorecard/manual`, json('PUT', { scores }),
+    ),
+    generateScorecardExcel: (id: number) => request<import('../types').ScorecardGenerateResult>(
+      `/api/reports/${id}/scorecard/generate-excel`, { method: 'POST' },
+    ),
     removeNav: (id: number) => request<void>(`/api/reports/${id}/scorecard/nav`, { method: 'DELETE' }),
     listVersions: (id: number) => request<ReportVersionSummary[]>(`/api/reports/${id}/versions`),
     compareVersions: (id: number, fromVersion: number, toVersion: number) => {
@@ -130,12 +142,20 @@ export const api = {
       `/api/reports/${reportId}/invitations/${invitationId}`,
       { method: 'DELETE' },
     ),
+    setInvitationEdit: (reportId: number, invitationId: number, canEdit: boolean) => request<ReportInvitation>(
+      `/api/reports/${reportId}/invitations/${invitationId}/permission`,
+      json('PATCH', { can_edit: canEdit }),
+    ),
   },
   publicFill: {
     get: (token: string) => request<PublicReport>(`/api/public/fill/${encodeURIComponent(token)}`),
     update: (token: string, body: Pick<PublicReport, 'content' | 'conclusion' | 'risk_items'>) => request<PublicReport>(
       `/api/public/fill/${encodeURIComponent(token)}`,
       json('PUT', body),
+    ),
+    validate: (token: string) => request<ValidationResult>(
+      `/api/public/fill/${encodeURIComponent(token)}/validate`,
+      { method: 'POST' },
     ),
     submit: (token: string) => request<PublicReport>(
       `/api/public/fill/${encodeURIComponent(token)}/submit`,

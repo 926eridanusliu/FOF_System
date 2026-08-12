@@ -25,12 +25,13 @@ from app.routers.reports import (
 from app.schemas.invitation import (
     InvitationCreate,
     InvitationCreated,
+    InvitationPermissionUpdate,
     InvitationRead,
     PublicReportRead,
     PublicReportUpdate,
 )
-from app.schemas.report import ImageUploadResponse
-from app.services.report_validator import manifest_fields, manifest_image_fields
+from app.schemas.report import ImageUploadResponse, ValidationResult
+from app.services.report_validator import CONTENT_METADATA_FIELDS, manifest_fields, manifest_image_fields, validate_online_content
 from app.services.deletions import is_deleted
 
 
@@ -59,8 +60,8 @@ def _get_invitation(token: str, db: Session, *, editable: bool = False) -> Repor
         raise HTTPException(status_code=410, detail="填写链接已被撤销")
     if _aware(invitation.expires_at) <= now:
         raise HTTPException(status_code=410, detail="填写链接已过期")
-    if editable and invitation.submitted_at is not None:
-        raise HTTPException(status_code=409, detail="资料已经提交，不能继续修改")
+    if editable and not invitation.can_edit:
+        raise HTTPException(status_code=409, detail="公司方当前不允许管理方修改")
     if editable and invitation.report.status != ReportStatus.DRAFT:
         raise HTTPException(status_code=409, detail="内部报告已提交，不能继续修改")
     return invitation
@@ -83,6 +84,7 @@ def _public_report(invitation: ReportInvitation, db: Session) -> PublicReportRea
         expires_at=invitation.expires_at,
         submitted_at=invitation.submitted_at,
         auto_strategy_keys=report.auto_strategy_keys,
+        can_edit=invitation.can_edit,
     )
 
 
@@ -104,11 +106,16 @@ def create_invitation(
         report_id=report.id,
         token_hash=_token_hash(raw_token),
         expires_at=datetime.now(timezone.utc) + timedelta(days=payload.expires_in_days),
+        can_edit=payload.can_edit,
     )
     db.add(invitation)
     db.commit()
     db.refresh(invitation)
-    frontend_url = os.getenv("PUBLIC_FRONTEND_URL", "http://127.0.0.1:5173").rstrip("/")
+    frontend_url = (
+        os.getenv("PUBLIC_FRONTEND_URL")
+        or os.getenv("REPORT_PUBLIC_BASE_URL")
+        or "http://127.0.0.1:5173"
+    ).rstrip("/")
     return InvitationCreated(
         id=invitation.id,
         report_id=report.id,
@@ -117,6 +124,7 @@ def create_invitation(
         submitted_at=None,
         created_at=invitation.created_at,
         last_saved_at=None,
+        can_edit=invitation.can_edit,
         fill_url=f"{frontend_url}/fill/{raw_token}",
     )
 
@@ -154,6 +162,30 @@ def revoke_invitation(
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
+@router.patch(
+    "/api/reports/{report_id}/invitations/{invitation_id}/permission",
+    response_model=InvitationRead,
+)
+def update_invitation_permission(
+    report_id: int,
+    invitation_id: int,
+    payload: InvitationPermissionUpdate,
+    db: Session = Depends(get_db),
+) -> ReportInvitation:
+    report = _get_report(report_id, db)
+    if report.status != ReportStatus.DRAFT:
+        raise HTTPException(status_code=409, detail="只有草稿报告可调整管理方修改权限")
+    invitation = db.get(ReportInvitation, invitation_id)
+    if invitation is None or invitation.report_id != report_id:
+        raise HTTPException(status_code=404, detail="填写链接不存在")
+    if invitation.revoked_at is not None:
+        raise HTTPException(status_code=409, detail="已撤销的填写链接不能恢复")
+    invitation.can_edit = payload.can_edit
+    db.commit()
+    db.refresh(invitation)
+    return invitation
+
+
 @router.get("/api/public/fill/{token}", response_model=PublicReportRead)
 def read_public_report(token: str, db: Session = Depends(get_db)) -> PublicReportRead:
     return _public_report(_get_invitation(token, db), db)
@@ -170,7 +202,7 @@ def update_public_report(
     if len(payload.content) > MAX_PUBLIC_CONTENT_FIELDS:
         raise HTTPException(status_code=422, detail="填写字段数量超过限制")
     allowed = manifest_fields(report.template_type)
-    unknown = sorted(set(payload.content) - allowed)
+    unknown = sorted(set(payload.content) - allowed - CONTENT_METADATA_FIELDS)
     if unknown:
         raise HTTPException(
             status_code=422,
@@ -197,11 +229,22 @@ def update_public_report(
 @router.post("/api/public/fill/{token}/submit", response_model=PublicReportRead)
 def submit_public_report(token: str, db: Session = Depends(get_db)) -> PublicReportRead:
     invitation = _get_invitation(token, db, editable=True)
+    validation = validate_online_content(invitation.report.template_type, dict(invitation.report.content or {}))
+    if not validation.valid:
+        detail = validation.model_dump() if hasattr(validation, "model_dump") else validation.dict()
+        raise HTTPException(status_code=422, detail=detail)
     invitation.submitted_at = datetime.now(timezone.utc)
+    invitation.can_edit = False
     invitation.last_saved_at = invitation.submitted_at
     db.commit()
     db.refresh(invitation)
     return _public_report(invitation, db)
+
+
+@router.post("/api/public/fill/{token}/validate", response_model=ValidationResult)
+def validate_public_report(token: str, db: Session = Depends(get_db)) -> ValidationResult:
+    invitation = _get_invitation(token, db, editable=True)
+    return validate_online_content(invitation.report.template_type, dict(invitation.report.content or {}))
 
 
 @router.post(

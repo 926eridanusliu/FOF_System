@@ -76,7 +76,7 @@ class DueDiligenceReport(Base):
         keys: list[str] = []
         for link in self.report_products:
             for record in link.product.strategy_records:
-                if record.strategy_key not in keys:
+                if record.strategy_key != "cover_strategy_other" and record.strategy_key not in keys:
                     keys.append(record.strategy_key)
         return keys
 

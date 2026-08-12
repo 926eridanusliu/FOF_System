@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import zipfile
+import json
 from pathlib import Path
 
 from lxml import etree
@@ -53,6 +54,7 @@ class StyleChecker:
         self,
         generated_path: str | Path,
         template_path: str | Path | None,
+        dynamic_rows: dict[str, int] | None = None,
     ) -> list[TableIssue]:
         if template_path is None:
             return self._internal_table_checks(generated_path)
@@ -64,13 +66,32 @@ class StyleChecker:
                 0, "表格数量", str(len(expected)), str(len(actual)), "表格数量发生变化"
             ))
         for index, (a, e) in enumerate(zip(actual, expected), 1):
-            for key in ("rows", "grid", "cell_widths", "cell_properties",
-                        "paragraph_alignments"):
-                if a[key] != e[key]:
-                    issues.append(TableIssue(
-                        index, key, str(e[key]), str(a[key]),
-                        "表格几何或对齐方式与空白模板不一致",
-                    ))
+            if a["grid"] != e["grid"]:
+                issues.append(TableIssue(index, "grid", str(e["grid"]), str(a["grid"]), "表格列宽发生变化"))
+            submitted_rows = (dynamic_rows or {}).get(str(index))
+            expected_details = e["row_details"]
+            if submitted_rows is not None:
+                definitions_path = Path(template_path).with_name("table_definitions.json")
+                if definitions_path.is_file():
+                    definitions = json.loads(definitions_path.read_text(encoding="utf-8"))
+                    profile = "private_fund" if len(expected) == 12 else "licensed_institution"
+                    definition = definitions.get(profile, {}).get(str(index), {})
+                    start = int(definition.get("start_row", 0))
+                    capacity = int(definition.get("template_rows", 0))
+                    if 0 < submitted_rows < capacity:
+                        expected_details = expected_details[:start + submitted_rows]
+            if len(a["row_details"]) < len(expected_details):
+                issues.append(TableIssue(index, "rows", str(len(e["row_details"])), str(len(a["row_details"])), "表格行被删除"))
+                continue
+            if a["row_details"][:len(expected_details)] != expected_details:
+                issues.append(TableIssue(index, "row_geometry", str(expected_details), str(a["row_details"][:len(expected_details)]), "模板原有行的几何或对齐方式发生变化"))
+            if submitted_rows is not None and submitted_rows < len(e["row_details"]):
+                if len(a["row_details"]) != len(expected_details):
+                    issues.append(TableIssue(index, "dynamic_rows", str(len(expected_details)), str(len(a["row_details"])), "动态表格行数与填写数据不一致"))
+            elif len(a["row_details"]) > len(e["row_details"]):
+                reference = e["row_details"][-1]
+                if any(row != reference for row in a["row_details"][len(e["row_details"]):]):
+                    issues.append(TableIssue(index, "appended_row_geometry", str(reference), str(a["row_details"][len(e["row_details"]):]), "新增行未继承模板末行格式"))
         return issues
 
     def _reference_signature(self, item, styles):
@@ -158,6 +179,20 @@ class StyleChecker:
                     for row in rows
                     for cell in row.xpath("./w:tc", namespaces=NS)
                     for paragraph in cell.xpath("./w:p", namespaces=NS)
+                ],
+                "row_details": [
+                    {
+                        "cells": len(row.xpath("./w:tc", namespaces=NS)),
+                        "widths": [cell.xpath("./w:tcPr/w:tcW/@w:w", namespaces=NS) for cell in row.xpath("./w:tc", namespaces=NS)],
+                        "properties": [(
+                            cell.xpath("./w:tcPr/w:gridSpan/@w:val", namespaces=NS),
+                            cell.xpath("./w:tcPr/w:vMerge/@w:val", namespaces=NS),
+                            bool(cell.xpath("./w:tcPr/w:vMerge[not(@w:val)]", namespaces=NS)),
+                            cell.xpath("./w:tcPr/w:vAlign/@w:val", namespaces=NS),
+                        ) for cell in row.xpath("./w:tc", namespaces=NS)],
+                        "alignments": [paragraph.xpath("./w:pPr/w:jc/@w:val", namespaces=NS) for cell in row.xpath("./w:tc", namespaces=NS) for paragraph in cell.xpath("./w:p", namespaces=NS)],
+                    }
+                    for row in rows
                 ],
             })
         return result

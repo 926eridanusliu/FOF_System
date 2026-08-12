@@ -4,20 +4,25 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { api, apiMessage } from '../api'
 import type { Manager, Product, Report, TemplateType } from '../types'
-import { statusLabel, strategyOptions, templateLabel } from '../utils/report'
+import { OTHER_PRODUCT_STRATEGY_KEY, productStrategyGroups, productStrategyLabel, statusLabel, strategyOptions, templateLabel } from '../utils/report'
 
 const route = useRoute(); const router = useRouter(); const managerId = Number(route.params.id)
 const loading = ref(true); const manager = ref<Manager>(); const products = ref<Product[]>([]); const reports = ref<Report[]>([])
 const productDialog = ref(false); const reportDialog = ref(false); const saving = ref(false)
 const productForm = reactive({ id: undefined as number | undefined, name: '', product_type: '', established_date: '', strategy_keys: [] as string[] })
+type ProductCreateMode = 'single' | 'batch'
+interface BatchProductRow { name: string; established_date: string }
+const productCreateMode = ref<ProductCreateMode>('single')
+const batchProductRows = ref<BatchProductRow[]>([{ name: '', established_date: '' }])
+const pasteProductDialog = ref(false); const pastedProductNames = ref('')
 const today = new Date()
 const localDate = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, '0')}.${String(today.getDate()).padStart(2, '0')}`
 const reportForm = reactive({ title: '', product_ids: [] as number[], template_type: 'private_fund' as TemplateType, investigator: '', report_date: localDate, manual_strategy_keys: [] as string[] })
 
 const reportByProduct = computed(() => Object.fromEntries(products.value.map((item) => [item.id, item.name])))
 const selectedReportProducts = computed(() => products.value.filter((item) => reportForm.product_ids.includes(item.id)))
-const autoReportStrategies = computed(() => [...new Set(selectedReportProducts.value.flatMap((item) => item.strategy_keys))])
-const strategyLabel = Object.fromEntries(strategyOptions.map(([key, label]) => [key, label]))
+const autoReportStrategies = computed(() => [...new Set(selectedReportProducts.value.flatMap((item) => item.strategy_keys))].filter((key) => key !== OTHER_PRODUCT_STRATEGY_KEY))
+const strategyLabel = productStrategyLabel
 
 async function load() {
   loading.value = true
@@ -27,6 +32,8 @@ async function load() {
 }
 
 async function createProduct() {
+  if (!productForm.strategy_keys.length) return ElMessage.warning('请至少选择一种产品策略')
+  if (!productForm.id && productCreateMode.value === 'batch') return createProductsBatch()
   if (!productForm.name.trim()) return ElMessage.warning('请输入产品名称')
   saving.value = true
   try {
@@ -38,7 +45,58 @@ async function createProduct() {
   } catch (error) { ElMessage.error(apiMessage(error)) } finally { saving.value = false }
 }
 
+async function createProductsBatch() {
+  const rows = batchProductRows.value
+    .map((item) => ({ name: item.name.trim(), established_date: item.established_date || null }))
+    .filter((item) => item.name)
+  if (!rows.length) return ElMessage.warning('请至少填写一个产品名称')
+  const names = rows.map((item) => item.name)
+  if (new Set(names).size !== names.length) return ElMessage.warning('本次填写的产品名称存在重复')
+  const existing = new Set(products.value.map((item) => item.name))
+  const duplicates = names.filter((name) => existing.has(name))
+  if (duplicates.length) return ElMessage.warning(`该管理人下已存在：${duplicates.join('、')}`)
+  saving.value = true
+  try {
+    const created = await api.products.createBatch({
+      manager_id: managerId,
+      product_type: productForm.product_type || null,
+      strategy_keys: [...productForm.strategy_keys],
+      products: rows,
+    })
+    ElMessage.success(`已创建 ${created.length} 个产品`)
+    productDialog.value = false
+    resetProductForm()
+    await load()
+  } catch (error) { ElMessage.error(apiMessage(error)) } finally { saving.value = false }
+}
+
+function resetProductForm() {
+  Object.assign(productForm, { id: undefined, name: '', product_type: '', established_date: '', strategy_keys: [] })
+  productCreateMode.value = 'single'
+  batchProductRows.value = [{ name: '', established_date: '' }]
+  pastedProductNames.value = ''
+}
+
+function addBatchProductRow() { batchProductRows.value.push({ name: '', established_date: '' }) }
+function removeBatchProductRow(index: number) {
+  if (batchProductRows.value.length === 1) batchProductRows.value[0] = { name: '', established_date: '' }
+  else batchProductRows.value.splice(index, 1)
+}
+function applyPastedProducts() {
+  const rows = pastedProductNames.value.split(/\r?\n/).map((line) => {
+    const [name = '', date = ''] = line.split(/\t/)
+    return { name: name.trim(), established_date: /^\d{4}-\d{2}-\d{2}$/.test(date.trim()) ? date.trim() : '' }
+  }).filter((item) => item.name)
+  if (!rows.length) return ElMessage.warning('请粘贴产品名称，每行一个')
+  const keepExisting = batchProductRows.value.some((item) => item.name.trim())
+  batchProductRows.value = keepExisting ? [...batchProductRows.value, ...rows] : rows
+  pasteProductDialog.value = false
+  pastedProductNames.value = ''
+}
+
 function openProduct(item?: Product) {
+  productCreateMode.value = 'single'
+  batchProductRows.value = [{ name: '', established_date: '' }]
   Object.assign(productForm, item
     ? { id: item.id, name: item.name, product_type: item.product_type || '', established_date: item.established_date || '', strategy_keys: [...item.strategy_keys] }
     : { id: undefined, name: '', product_type: '', established_date: '', strategy_keys: [] })
@@ -48,8 +106,9 @@ function openProduct(item?: Product) {
 async function createReport() {
   if (!manager.value || !reportForm.title.trim() || !reportForm.product_ids.length || !reportForm.investigator.trim()) return ElMessage.warning('请填写报告标题、产品和调查人')
   const selectedStrategies = [...new Set([...autoReportStrategies.value, ...reportForm.manual_strategy_keys])]
-  if (!selectedStrategies.length) return ElMessage.warning('请为产品配置策略，或手动补充至少一种策略')
   const selectedProducts = selectedReportProducts.value
+  const hasOtherStrategy = selectedProducts.some((item) => item.strategy_keys.includes(OTHER_PRODUCT_STRATEGY_KEY))
+  if (!selectedStrategies.length && !hasOtherStrategy) return ElMessage.warning('请为产品配置策略，或手动补充至少一种策略')
   saving.value = true
   try {
     const report = await api.reports.create({
@@ -123,9 +182,45 @@ onMounted(load)
       </aside>
     </div>
 
-    <el-dialog v-model="productDialog" :title="productForm.id ? '编辑产品' : '新增产品'" width="620px">
-      <el-form label-position="top"><el-form-item label="产品名称" required><el-input v-model="productForm.name" /></el-form-item><el-form-item label="产品类型"><el-input v-model="productForm.product_type" /></el-form-item><el-form-item label="成立日期"><el-date-picker v-model="productForm.established_date" value-format="YYYY-MM-DD" type="date" style="width:100%" /></el-form-item><el-form-item label="产品策略" required><el-checkbox-group v-model="productForm.strategy_keys"><el-space wrap><el-checkbox v-for="[key,label] in strategyOptions" :key="key" :value="key">{{ label }}</el-checkbox></el-space></el-checkbox-group></el-form-item></el-form>
-      <template #footer><el-button @click="productDialog=false">取消</el-button><el-button type="primary" :loading="saving" @click="createProduct">{{ productForm.id ? '保存' : '创建产品' }}</el-button></template>
+    <el-dialog v-model="productDialog" class="product-dialog" :title="productForm.id ? '编辑产品' : '新增产品'" width="920px">
+      <div v-if="!productForm.id" class="product-create-mode">
+        <span>新增方式</span>
+        <el-radio-group v-model="productCreateMode">
+          <el-radio-button value="single">单个新增</el-radio-button>
+          <el-radio-button value="batch">批量新增</el-radio-button>
+        </el-radio-group>
+      </div>
+      <el-form label-position="top">
+        <template v-if="productForm.id || productCreateMode === 'single'">
+          <el-form-item label="产品名称" required><el-input v-model="productForm.name" /></el-form-item>
+        </template>
+        <el-form-item :label="productCreateMode === 'batch' && !productForm.id ? '共同产品类型' : '产品类型'"><el-input v-model="productForm.product_type" /></el-form-item>
+        <el-form-item v-if="productForm.id || productCreateMode === 'single'" label="成立日期"><el-date-picker v-model="productForm.established_date" value-format="YYYY-MM-DD" type="date" style="width:100%" /></el-form-item>
+        <el-form-item :label="productCreateMode === 'batch' && !productForm.id ? '共同产品策略' : '产品策略'" required>
+          <el-checkbox-group v-model="productForm.strategy_keys" class="product-strategy-groups">
+            <div v-for="group in productStrategyGroups" :key="group.keys.join('-')" :class="['product-strategy-row', { 'is-standalone': !group.label }]">
+              <strong v-if="group.label">{{ group.label }}：</strong>
+              <div class="product-strategy-options">
+                <el-checkbox v-for="key in group.keys" :key="key" :value="key">{{ productStrategyLabel[key] }}</el-checkbox>
+              </div>
+            </div>
+          </el-checkbox-group>
+        </el-form-item>
+      </el-form>
+      <template v-if="!productForm.id && productCreateMode === 'batch'">
+        <div class="batch-product-heading"><div><h3>产品明细</h3><p>共同类型和策略将应用到下列全部产品；成立日期可以分别填写。</p></div><div><el-button @click="pasteProductDialog=true">从 Excel 粘贴</el-button><el-button type="primary" plain @click="addBatchProductRow">添加一行</el-button></div></div>
+        <el-table :data="batchProductRows" border max-height="360">
+          <el-table-column label="产品名称 *" min-width="430"><template #default="{ row }"><el-input v-model="row.name" /></template></el-table-column>
+          <el-table-column label="成立日期" width="220"><template #default="{ row }"><el-date-picker v-model="row.established_date" value-format="YYYY-MM-DD" type="date" style="width:100%" /></template></el-table-column>
+          <el-table-column label="操作" width="90" align="center"><template #default="{ $index }"><el-button link type="danger" @click="removeBatchProductRow($index)">删除</el-button></template></el-table-column>
+        </el-table>
+      </template>
+      <template #footer><el-button @click="productDialog=false">取消</el-button><el-button type="primary" :loading="saving" @click="createProduct">{{ productForm.id ? '保存' : productCreateMode === 'batch' ? `创建 ${batchProductRows.filter((item) => item.name.trim()).length || 0} 个产品` : '创建产品' }}</el-button></template>
+    </el-dialog>
+    <el-dialog v-model="pasteProductDialog" title="批量粘贴产品" width="560px" append-to-body>
+      <p class="muted">每行一个产品名称；也可以从 Excel 粘贴“产品名称、成立日期”两列。</p>
+      <el-input v-model="pastedProductNames" type="textarea" :rows="10" placeholder="远澜红枫私享12号&#10;远澜红枫15号" />
+      <template #footer><el-button @click="pasteProductDialog=false">取消</el-button><el-button type="primary" @click="applyPastedProducts">生成产品行</el-button></template>
     </el-dialog>
     <el-dialog v-model="reportDialog" title="创建尽调报告草稿" width="620px">
       <el-form label-position="top"><el-form-item label="报告标题" required><el-input v-model="reportForm.title" /></el-form-item><div class="field-grid"><el-form-item label="关联产品（可多选）" required><el-select v-model="reportForm.product_ids" multiple style="width:100%"><el-option v-for="item in products" :key="item.id" :label="item.name" :value="item.id" /></el-select></el-form-item><el-form-item label="模板类型"><el-select v-model="reportForm.template_type" style="width:100%"><el-option v-for="(label,key) in templateLabel" :key="key" :label="label" :value="key" /></el-select></el-form-item><el-form-item label="调查人" required><el-input v-model="reportForm.investigator" /></el-form-item><el-form-item label="报告日期"><el-input v-model="reportForm.report_date" /></el-form-item></div><el-form-item label="产品自动带入策略"><el-space wrap><el-tag v-for="key in autoReportStrategies" :key="key">{{ strategyLabel[key] }}</el-tag><span v-if="!autoReportStrategies.length" class="muted">所选产品尚未配置策略</span></el-space></el-form-item><el-form-item label="手动补充策略"><el-checkbox-group v-model="reportForm.manual_strategy_keys"><el-space wrap><el-checkbox v-for="[key,label] in strategyOptions" :key="key" :value="key" :disabled="autoReportStrategies.includes(key)">{{ label }}</el-checkbox></el-space></el-checkbox-group></el-form-item></el-form>

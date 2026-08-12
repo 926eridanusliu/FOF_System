@@ -4,6 +4,7 @@ from urllib.parse import unquote
 from uuid import uuid4
 
 from fastapi import APIRouter, Body, Depends, Header, HTTPException, Response, status
+from fastapi.responses import FileResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -11,12 +12,19 @@ from app import storage
 from app.database import get_db
 from app.models.report import DueDiligenceReport, ReportStatus
 from app.models.scorecard import ReportScorecard
-from app.schemas.scorecard import ScorecardCalculateRequest, ScorecardRead
+from app.schemas.scorecard import (
+    ScorecardCalculateRequest, ScorecardGenerateResponse,
+    ScorecardManualSaveRequest, ScorecardRead,
+)
 from app.services.scorecard import (
     calculate_scorecard,
     load_nav_file,
     parse_nav_upload,
     preview_rows,
+)
+from app.services.scorecard_excel import (
+    XLSX_CONTENT_TYPE, generate_scorecard_workbook,
+    scorecard_template_definition, summarize_manual_scores,
 )
 from app.services.deletions import is_deleted
 
@@ -55,6 +63,8 @@ def _scorecard_read(report_id: int, scorecard: ReportScorecard | None) -> Scorec
         detected_columns=dict(scorecard.detected_columns or {}),
         nav_preview=list(scorecard.nav_preview or []),
         calculation_inputs=dict(scorecard.calculation_inputs or {}),
+        manual_scores=dict((scorecard.calculation_inputs or {}).get("manual_scores") or {}),
+        template_items=scorecard_template_definition(),
         metrics=dict(scorecard.metrics or {}),
         score_rows=list(scorecard.score_rows or []),
         quantitative_score=scorecard.quantitative_score,
@@ -76,7 +86,10 @@ def _stored_path(report_id: int, stored_filename: str | None) -> Path | None:
 @router.get("/{report_id}/scorecard", response_model=ScorecardRead)
 def get_scorecard(report_id: int, db: Session = Depends(get_db)) -> ScorecardRead:
     _get_report(report_id, db)
-    return _scorecard_read(report_id, _get_scorecard(report_id, db))
+    scorecard = _get_scorecard(report_id, db)
+    if scorecard is None:
+        return ScorecardRead(report_id=report_id, template_items=scorecard_template_definition())
+    return _scorecard_read(report_id, scorecard)
 
 
 @router.post(
@@ -129,15 +142,17 @@ def upload_nav_file(
     scorecard.nav_columns = table.columns
     scorecard.detected_columns = table.detected_columns
     scorecard.nav_preview = preview_rows(table)
-    scorecard.calculation_inputs = {}
+    saved_manual_scores = dict((scorecard.calculation_inputs or {}).get("manual_scores") or {})
+    scorecard.calculation_inputs = {"manual_scores": saved_manual_scores} if saved_manual_scores else {}
     scorecard.metrics = {}
-    scorecard.score_rows = []
-    scorecard.quantitative_score = None
-    scorecard.qualitative_score = None
-    scorecard.compliance_deduction = None
-    scorecard.total_score = None
-    scorecard.admitted = None
-    scorecard.calculated_at = None
+    if not saved_manual_scores:
+        scorecard.score_rows = []
+        scorecard.quantitative_score = None
+        scorecard.qualitative_score = None
+        scorecard.compliance_deduction = None
+        scorecard.total_score = None
+        scorecard.admitted = None
+        scorecard.calculated_at = None
     db.commit()
     db.refresh(scorecard)
     if old_path and old_path != target:
@@ -169,7 +184,10 @@ def calculate_report_scorecard(
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
-    scorecard.calculation_inputs = payload.model_dump()
+    scorecard.calculation_inputs = {
+        **payload.model_dump(),
+        "manual_scores": result["suggested_manual_scores"],
+    }
     scorecard.metrics = result["metrics"]
     scorecard.score_rows = result["score_rows"]
     scorecard.quantitative_score = result["quantitative_score"]
@@ -181,6 +199,55 @@ def calculate_report_scorecard(
     db.commit()
     db.refresh(scorecard)
     return _scorecard_read(report_id, scorecard)
+
+
+@router.put("/{report_id}/scorecard/manual", response_model=ScorecardRead)
+def save_manual_scorecard(report_id: int, payload: ScorecardManualSaveRequest, db: Session = Depends(get_db)) -> ScorecardRead:
+    report = _get_report(report_id, db)
+    if report.status != ReportStatus.DRAFT:
+        raise HTTPException(status_code=409, detail="只有草稿报告可以修改评分卡")
+    try:
+        summary = summarize_manual_scores(payload.scores)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    scorecard = _get_scorecard(report_id, db)
+    if scorecard is None:
+        scorecard = ReportScorecard(report_id=report_id)
+        db.add(scorecard)
+    scorecard.calculation_inputs = {**dict(scorecard.calculation_inputs or {}), "manual_scores": summary["manual_scores"]}
+    scorecard.score_rows = summary["score_rows"]
+    scorecard.quantitative_score = summary["quantitative_score"]
+    scorecard.qualitative_score = summary["qualitative_score"]
+    scorecard.compliance_deduction = summary["compliance_deduction"]
+    scorecard.total_score = summary["total_score"]
+    scorecard.admitted = summary["admitted"]
+    scorecard.calculated_at = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(scorecard)
+    return _scorecard_read(report_id, scorecard)
+
+
+@router.post("/{report_id}/scorecard/generate-excel", response_model=ScorecardGenerateResponse)
+def generate_scorecard_excel(report_id: int, db: Session = Depends(get_db)) -> ScorecardGenerateResponse:
+    _get_report(report_id, db)
+    scorecard = _get_scorecard(report_id, db)
+    manual_scores = dict((scorecard.calculation_inputs or {}).get("manual_scores") or {}) if scorecard else {}
+    try:
+        output_path = generate_scorecard_workbook(report_id, manual_scores)
+    except (OSError, ValueError) as exc:
+        raise HTTPException(status_code=422, detail=f"评分卡生成失败：{exc}") from exc
+    return ScorecardGenerateResponse(filename=output_path.name, download_url=f"/api/reports/{report_id}/scorecard/files/{output_path.name}")
+
+
+@router.get("/{report_id}/scorecard/files/{filename}", response_class=FileResponse)
+def download_scorecard_excel(report_id: int, filename: str, db: Session = Depends(get_db)) -> FileResponse:
+    _get_report(report_id, db)
+    if Path(filename).name != filename or not filename.startswith(f"scorecard-report-{report_id}-") or not filename.endswith(".xlsx"):
+        raise HTTPException(status_code=400, detail="评分卡文件名无效")
+    target = storage.SCORECARD_GENERATED_DIR / filename
+    if not target.is_file():
+        raise HTTPException(status_code=404, detail="评分卡文件不存在")
+    return FileResponse(target, media_type=XLSX_CONTENT_TYPE, filename=filename)
 
 
 @router.delete(
@@ -199,7 +266,23 @@ def delete_nav_file(
     if scorecard is None:
         raise HTTPException(status_code=404, detail="尚未上传净值文件")
     target = _stored_path(report_id, scorecard.nav_stored_filename)
-    db.delete(scorecard)
+    manual_scores = dict((scorecard.calculation_inputs or {}).get("manual_scores") or {})
+    scorecard.nav_original_filename = None
+    scorecard.nav_stored_filename = None
+    scorecard.nav_sheet_name = None
+    scorecard.nav_columns = []
+    scorecard.detected_columns = {}
+    scorecard.nav_preview = []
+    scorecard.calculation_inputs = {"manual_scores": manual_scores} if manual_scores else {}
+    scorecard.metrics = {}
+    if not manual_scores:
+        scorecard.score_rows = []
+        scorecard.quantitative_score = None
+        scorecard.qualitative_score = None
+        scorecard.compliance_deduction = None
+        scorecard.total_score = None
+        scorecard.admitted = None
+        scorecard.calculated_at = None
     db.commit()
     if target:
         target.unlink(missing_ok=True)

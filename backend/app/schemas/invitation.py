@@ -8,6 +8,11 @@ from app.models.report import ReportTemplateType
 
 class InvitationCreate(BaseModel):
     expires_in_days: int = Field(default=7, ge=1, le=30)
+    can_edit: bool = True
+
+
+class InvitationPermissionUpdate(BaseModel):
+    can_edit: bool
 
 
 class InvitationRead(BaseModel):
@@ -18,6 +23,7 @@ class InvitationRead(BaseModel):
     submitted_at: datetime | None
     created_at: datetime
     last_saved_at: datetime | None
+    can_edit: bool
     fill_url: str | None = None
 
 
@@ -36,6 +42,7 @@ class PublicReportRead(BaseModel):
     expires_at: datetime
     submitted_at: datetime | None
     auto_strategy_keys: list[str] = Field(default_factory=list)
+    can_edit: bool
 
 
 class PublicReportUpdate(BaseModel):

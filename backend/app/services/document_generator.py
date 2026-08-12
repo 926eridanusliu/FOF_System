@@ -10,7 +10,6 @@ from validator.mapper import InputDataMapper
 from app import storage
 from app.models.report import DueDiligenceReport, ReportTemplateType
 from app.services.report_validator import manifest_image_fields
-from app.services.scorecard_document import append_scorecard
 
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent.parent
@@ -67,7 +66,6 @@ def _prepare_content(report: DueDiligenceReport, profile: str) -> dict[str, Any]
 
 def generate_document(
     report: DueDiligenceReport,
-    scorecard_snapshot: dict[str, Any] | None = None,
 ) -> GeneratedDocument:
     config = CONFIGS[report.template_type]
     storage.GENERATED_DIR.mkdir(parents=True, exist_ok=True)
@@ -87,9 +85,13 @@ def generate_document(
     ).validate(output_path, content)
     validation.to_json(output_path.with_name(f"{output_path.stem}_校验报告.json"))
     validation.to_docx(output_path.with_name(f"{output_path.stem}_校验报告.docx"))
-    if scorecard_snapshot:
-        append_scorecard(output_path, scorecard_snapshot)
-
+    if not validation.success:
+        raise ValueError(
+            "生成后的 Word 校验未通过："
+            f"遗漏 {validation.missing}，值不一致 {validation.mismatched}，"
+            f"多余填充 {validation.extra}，格式问题 {validation.format_issue_count}，"
+            f"表格问题 {validation.table_issue_count}"
+        )
     return GeneratedDocument(
         filename=filename,
         path=output_path,

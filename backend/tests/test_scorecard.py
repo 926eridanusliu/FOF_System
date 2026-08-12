@@ -1,12 +1,14 @@
 from datetime import date
 from io import BytesIO
 from pathlib import Path
+from xml.etree import ElementTree
 from zipfile import ZIP_DEFLATED, ZipFile
 
 from docx import Document
 
 from app import storage
 from app.services.scorecard import parse_nav_upload
+from app.services.scorecard_excel import render_scorecard_workbook
 from tests.test_api_workflow import create_report_records
 
 
@@ -134,7 +136,28 @@ def test_xlsx_parser_reads_inline_strings_and_numbers() -> None:
     assert table.rows[1]["累计净值"] == 1.02
 
 
-def test_scorecard_api_calculates_and_appends_report(
+def _manual_scores() -> dict[str, float]:
+    return {
+        "one_year_return": 10, "relative_return": 9, "long_term_return": 7,
+        "monthly_win_rate": 6, "max_drawdown": 8, "sharpe_ratio": 9, "calmar_ratio": 6,
+        "managed_products": 10, "investment_manager": 5, "research_team": 4,
+        "team_stability": 2, "allocation_value": 3, "risk_control": 3,
+        "coinvestment": 2, "compliance_deduction": 3,
+    }
+
+
+def _xlsx_numeric_cells(path: Path) -> dict[str, float]:
+    namespace = {"x": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
+    with ZipFile(path) as archive:
+        root = ElementTree.fromstring(archive.read("xl/worksheets/sheet1.xml"))
+    return {
+        cell.attrib["r"]: float(cell.findtext("x:v", namespaces=namespace))
+        for cell in root.findall(".//x:c", namespace)
+        if cell.attrib.get("r", "").startswith("D") and cell.find("x:v", namespace) is not None
+    }
+
+
+def test_scorecard_api_calculates_and_keeps_word_independent(
     client,
     private_fund_data,
     tmp_path: Path,
@@ -178,19 +201,10 @@ def test_scorecard_api_calculates_and_appends_report(
     assert generation.status_code == 200, generation.text
     output_path = generated_dir / generation.json()["filename"]
     document = Document(output_path)
-    assert any(
-        paragraph.text == "附录：私募产品准入评分表"
-        for paragraph in document.paragraphs
-    )
-    assert any(
-        "近1年收益率/相对收益（取高）" in cell.text
-        for table in document.tables
-        for row in table.rows
-        for cell in row.cells
-    )
+    assert not any(paragraph.text == "附录：私募产品准入评分表" for paragraph in document.paragraphs)
 
 
-def test_licensed_template_also_receives_scorecard_appendix(
+def test_licensed_template_word_also_stays_independent_from_scorecard(
     client,
     licensed_institution_data,
     tmp_path: Path,
@@ -220,7 +234,43 @@ def test_licensed_template_also_receives_scorecard_appendix(
     generation = client.post(f"/api/reports/{report['id']}/generate")
     assert generation.status_code == 200, generation.text
     document = Document(generated_dir / generation.json()["filename"])
-    assert any(
-        paragraph.text == "附录：私募产品准入评分表"
-        for paragraph in document.paragraphs
-    )
+    assert not any(paragraph.text == "附录：私募产品准入评分表" for paragraph in document.paragraphs)
+
+
+def test_manual_scores_generate_filled_excel(client, private_fund_data, tmp_path: Path, monkeypatch) -> None:
+    scorecard_dir = tmp_path / "scorecards"
+    monkeypatch.setattr(storage, "SCORECARD_GENERATED_DIR", scorecard_dir)
+    _, _, report = create_report_records(client, private_fund_data, "private_fund", "人工评分Excel测试")
+    initial = client.get(f"/api/reports/{report['id']}/scorecard")
+    assert initial.status_code == 200
+    assert len(initial.json()["template_items"]) == 15
+    saved = client.put(f"/api/reports/{report['id']}/scorecard/manual", json={"scores": _manual_scores()})
+    assert saved.status_code == 200, saved.text
+    assert saved.json()["quantitative_score"] == 46
+    assert saved.json()["qualitative_score"] == 29
+    assert saved.json()["total_score"] == 72
+    generated = client.post(f"/api/reports/{report['id']}/scorecard/generate-excel")
+    assert generated.status_code == 200, generated.text
+    path = scorecard_dir / generated.json()["filename"]
+    cells = _xlsx_numeric_cells(path)
+    assert cells["D4"] == 10 and cells["D5"] == 9 and cells["D18"] == 3 and cells["D19"] == 72
+    downloaded = client.get(generated.json()["download_url"])
+    assert downloaded.status_code == 200
+
+
+def test_manual_score_validation_rejects_over_maximum(client, private_fund_data) -> None:
+    _, _, report = create_report_records(client, private_fund_data, "private_fund", "人工评分上限测试")
+    scores = _manual_scores()
+    scores["investment_manager"] = 7
+    response = client.put(f"/api/reports/{report['id']}/scorecard/manual", json={"scores": scores})
+    assert response.status_code == 422
+    assert "不能超过满分6分" in response.text
+
+
+def test_template_renderer_preserves_workbook_and_replaces_score_cells(tmp_path: Path) -> None:
+    output = tmp_path / "filled.xlsx"
+    render_scorecard_workbook(_manual_scores(), output)
+    with ZipFile(output) as archive:
+        assert "xl/styles.xml" in archive.namelist()
+        assert "xl/sharedStrings.xml" in archive.namelist()
+    assert _xlsx_numeric_cells(output)["D19"] == 72

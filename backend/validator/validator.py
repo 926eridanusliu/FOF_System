@@ -48,7 +48,7 @@ class Validator:
         extractor = BookmarkExtractor(generated)
         actual = extractor.extract_all()
         profile = self._detect_profile(extractor.bookmark_names)
-        expected = self.mapper.map(data, profile)
+        expected = self.mapper.map(self._flatten_dynamic_rows(data, profile), profile)
         results = []
         matched = missing = mismatched = extra = empty_expected = 0
         for field in extractor.bookmark_names:
@@ -100,11 +100,56 @@ class Validator:
                     field, str(expected[field]), "", "遗漏", "书签不存在",
                     "输入数据有值，但生成文档中没有对应书签",
                 ))
+        dynamic = data.get("__dynamic_tables", {})
+        definitions_path = self.template_path.with_name("table_definitions.json") if self.template_path else None
+        if isinstance(dynamic, dict) and definitions_path and definitions_path.is_file():
+            from docx import Document
+            definitions = json.loads(definitions_path.read_text(encoding="utf-8"))
+            definition_key = "licensed_institution" if profile == "licensed" else "private_fund"
+            document = Document(generated)
+            for table_number, rows in dynamic.items():
+                definition = definitions.get(definition_key, {}).get(str(table_number))
+                if not definition or not isinstance(rows, list):
+                    continue
+                capacity = int(definition["template_rows"])
+                start_row = int(definition["start_row"])
+                for offset, row in enumerate(rows[capacity:], capacity):
+                    if not isinstance(row, dict):
+                        continue
+                    for column in definition["columns"]:
+                        col = int(column["col"])
+                        expected_value = row.get(str(col), row.get(col, ""))
+                        if column.get("input") == "percent" and expected_value not in (None, "") and not str(expected_value).strip().endswith(("%", "％")):
+                            expected_value = f"{str(expected_value).strip()}%"
+                        suffix = str(column.get("output_suffix", ""))
+                        if suffix and expected_value not in (None, "") and re.fullmatch(r"[+-]?\d+(?:\.\d+)?", str(expected_value).strip()):
+                            expected_value = f"{str(expected_value).strip()}{suffix}"
+                        location = f"table:{table_number}; row:{start_row + offset}; col:{col}"
+                        try:
+                            actual_value = document.tables[int(table_number) - 1].rows[start_row + offset].cells[col].text
+                        except (IndexError, ValueError):
+                            actual_value = ""
+                        if normalize(expected_value) and not normalize(actual_value):
+                            status = "遗漏"; missing += 1
+                        elif normalize(expected_value) != normalize(actual_value):
+                            status = "值不一致"; mismatched += 1
+                        else:
+                            status = "一致"; matched += 1
+                        results.append(FieldResult(
+                            f"table_{table_number}_dynamic_row{start_row + offset}_col{col}",
+                            str(expected_value or ""), str(actual_value or ""), status, location,
+                        ))
         format_issues = self.style_checker.compare_fields(
             extractor, actual, self.template_path
         )
         table_issues = self.style_checker.compare_tables(
-            generated, self.template_path
+            generated,
+            self.template_path,
+            dynamic_rows={
+                str(table): len(rows)
+                for table, rows in dynamic.items()
+                if isinstance(rows, list) and rows
+            } if isinstance(dynamic, dict) else None,
         )
         notes = [
             "比较范围为文档中的全部书签字段；metadata、scorecard、eligibility_check 等非报告输出数据不参与遗漏统计。",
@@ -141,3 +186,31 @@ class Validator:
         if "table_1_data_cutoff_date" in names:
             return "private_2026"
         return "private"
+
+    def _flatten_dynamic_rows(self, data: dict[str, Any], profile: str) -> dict[str, Any]:
+        dynamic = data.get("__dynamic_tables", {})
+        definitions_path = self.template_path.with_name("table_definitions.json") if self.template_path else None
+        if not isinstance(dynamic, dict) or not definitions_path or not definitions_path.is_file():
+            return data
+        definitions = json.loads(definitions_path.read_text(encoding="utf-8"))
+        definition_key = "licensed_institution" if profile == "licensed" else "private_fund"
+        result = dict(data)
+        for table, rows in dynamic.items():
+            definition = definitions.get(definition_key, {}).get(str(table))
+            if not definition or not isinstance(rows, list):
+                continue
+            for offset, row in enumerate(rows[:int(definition["template_rows"])]):
+                if not isinstance(row, dict):
+                    continue
+                actual_row = int(definition["start_row"]) + offset
+                for column in definition["columns"]:
+                    col = int(column["col"])
+                    value = row.get(str(col), row.get(col, ""))
+                    input_type = definition.get("row_input_types", {}).get(str(actual_row), column.get("input", "text"))
+                    if input_type == "percent" and value not in (None, "") and not str(value).strip().endswith(("%", "％")):
+                        value = f"{str(value).strip()}%"
+                    suffix = str(column.get("output_suffix", ""))
+                    if suffix and value not in (None, "") and re.fullmatch(r"[+-]?\d+(?:\.\d+)?", str(value).strip()):
+                        value = f"{str(value).strip()}{suffix}"
+                    result[f"table_{table}_row{actual_row}_col{col}"] = value
+        return result

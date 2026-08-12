@@ -26,6 +26,14 @@ class CoverFiller(BaseFiller):
                 replaced = self._replace_text(paragraph, "             ", string)
                 if not replaced:
                     raise ValueError("未找到其他策略文本占位符")
+                for text in paragraph.xpath("./w:r/w:t", namespaces=self.package.NS):
+                    if "□其他投资策略" in (text.text or ""):
+                        text.text = text.text.replace(
+                            "□其他投资策略",
+                            f"{'☑' if string.strip() else '□'}其他投资策略",
+                            1,
+                        )
+                        break
             else:
                 self.replace_bookmark_content(field, string, self.category)
             return self.result(

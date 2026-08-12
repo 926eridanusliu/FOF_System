@@ -39,9 +39,8 @@ from app.services.report_versions import (
     create_report_version,
     remove_uncommitted_version_files,
 )
-from app.services.scorecard import scorecard_snapshot
 from app.services.feishu_notifications import create_notification, enqueue_notification
-from app.services.report_validator import manifest_fields
+from app.services.report_validator import manifest_fields, normalize_dynamic_tables
 from validator.mapper import InputDataMapper
 from app.services.deletions import add_deletion, is_deleted, visible_entity
 
@@ -104,15 +103,25 @@ def _report_products(report: DueDiligenceReport, db: Session) -> list[Product]:
 
 
 def _sync_identity_and_strategies(
-    report: DueDiligenceReport, manager: Manager, products: list[Product]
+    report: DueDiligenceReport,
+    manager: Manager,
+    products: list[Product],
+    *,
+    preserve_product_name: bool = False,
 ) -> None:
     content = dict(report.content or {})
     content["cover_manager_name"] = manager.name
     content["table_1_row0_col1"] = manager.name
-    content["cover_product_name"] = "、".join(product.name for product in products)
+    if not preserve_product_name or not content.get("cover_product_name"):
+        content["cover_product_name"] = "、".join(product.name for product in products)
     for product in products:
         for strategy_key in product.strategy_keys:
-            content[strategy_key] = True
+            if strategy_key == "cover_strategy_other":
+                content["cover_strategy_other_text"] = (
+                    content.get("cover_strategy_other_text") or "其他"
+                )
+            else:
+                content[strategy_key] = True
     report.content = content
 
 
@@ -226,11 +235,17 @@ async def import_report_json(
         profile = str(CONFIGS[report.template_type]["profile"])
         candidate = InputDataMapper().map(parsed, profile)
 
+    dynamic_tables = candidate.get("__dynamic_tables") if isinstance(candidate, dict) else None
+    if not isinstance(dynamic_tables, dict):
+        dynamic_tables = None
+
     allowed = manifest_fields(report.template_type)
     imported: dict = {}
     ignored: list[str] = []
     for raw_key, value in candidate.items():
         key = str(raw_key)
+        if key == "__dynamic_tables":
+            continue
         if key not in allowed:
             ignored.append(key)
             continue
@@ -250,12 +265,22 @@ async def import_report_json(
         and current[key] != value
     ]
     if apply:
-        report.content = {**current, **imported}
+        merged = {**current, **imported}
+        if source_format == "legacy-questionnaire":
+            merged.pop("__dynamic_tables", None)
+        if dynamic_tables is not None:
+            merged["__dynamic_tables"] = normalize_dynamic_tables(report.template_type, dynamic_tables)
+        report.content = merged
         manager = db.get(Manager, report.manager_id)
         products = _report_products(report, db)
         if manager is None or not products:
             raise HTTPException(status_code=409, detail="报告关联的管理人或产品不存在")
-        _sync_identity_and_strategies(report, manager, products)
+        _sync_identity_and_strategies(
+            report,
+            manager,
+            products,
+            preserve_product_name=True,
+        )
         db.commit()
         db.refresh(report)
 
@@ -370,11 +395,8 @@ def generate_report(report_id: int, db: Session = Depends(get_db)) -> GenerateRe
     product = products[0] if products else None
     if not validation.valid:
         raise HTTPException(status_code=422, detail=validation.model_dump())
-    scorecard = db.scalar(
-        select(ReportScorecard).where(ReportScorecard.report_id == report_id)
-    )
     try:
-        generated = generate_document(report, scorecard_snapshot(scorecard))
+        generated = generate_document(report)
     except (OSError, ValueError, KeyError) as exc:
         raise HTTPException(status_code=500, detail=f"报告生成失败：{exc}") from exc
     report.generated_filename = generated.filename
@@ -427,11 +449,6 @@ def create_generation_job(
         return active
 
     content_snapshot = dict(report.content or {})
-    frozen_scorecard = scorecard_snapshot(
-        db.scalar(select(ReportScorecard).where(ReportScorecard.report_id == report_id))
-    )
-    if frozen_scorecard:
-        content_snapshot["__scorecard__"] = frozen_scorecard
     job = ReportGenerationJob(
         report_id=report.id,
         template_type=report.template_type,

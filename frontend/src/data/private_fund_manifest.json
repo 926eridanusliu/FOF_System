@@ -2862,19 +2862,19 @@
     {
       "bookmark": "qa_section5_credit_screenshot_1",
       "type": "image",
-      "prompt": "截图：",
+      "prompt": "全国企业信用信息公示系统查询截图",
       "insertion_mode": "bookmark_image"
     },
     {
       "bookmark": "qa_section5_credit_screenshot_2",
       "type": "image",
-      "prompt": "截图：",
+      "prompt": "中国执行信息公开网查询截图",
       "insertion_mode": "bookmark_image"
     },
     {
       "bookmark": "qa_section5_credit_screenshot_3",
       "type": "image",
-      "prompt": "截图：",
+      "prompt": "证券期货市场失信记录查询平台截图",
       "insertion_mode": "bookmark_image"
     },
     {

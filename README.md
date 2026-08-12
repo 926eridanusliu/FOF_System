@@ -38,6 +38,7 @@ npm run dev
 系统支持为产品配置策略、一份报告关联多只产品、预览后导入 JSON，以及生成
 限定报告、带有效期并可撤销的管理人填写链接。生产环境必须在
 `backend/.env` 设置对方能够访问的 `PUBLIC_FRONTEND_URL`。
+公司方可在每条填写链接上单独开启或关闭管理方的修改权限。
 
 更完整的配置、接口与运行说明见 `backend/README.md` 和 `frontend/README.md`。
 

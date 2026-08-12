@@ -80,6 +80,7 @@ def test_json_import_preview_and_apply(client, private_fund_data) -> None:
     payload = {
         "content": {
             "qa_section1_q001_answer": "导入后的回答",
+            "cover_product_name": "导入产品甲、导入产品乙",
             "cover_manager_name": "不应覆盖的管理人",
             "not_in_template": "忽略",
         }
@@ -90,7 +91,7 @@ def test_json_import_preview_and_apply(client, private_fund_data) -> None:
     )
     assert preview.status_code == 200, preview.text
     assert preview.json()["applied"] is False
-    assert preview.json()["recognized_count"] == 2
+    assert preview.json()["recognized_count"] == 3
     assert "not_in_template" in preview.json()["ignored_fields"]
 
     applied = client.post(
@@ -100,6 +101,11 @@ def test_json_import_preview_and_apply(client, private_fund_data) -> None:
     report = client.get(f"/api/reports/{report_id}").json()
     assert report["content"]["qa_section1_q001_answer"] == "导入后的回答"
     assert report["content"]["cover_manager_name"] == manager["name"]
+    assert report["content"]["cover_product_name"] == "导入产品甲、导入产品乙"
+
+    validation = client.post(f"/api/reports/{report_id}/validate").json()
+    assert validation["valid"] is True
+    assert any("将按报告中导入或填写的名称生成" in item["message"] for item in validation["warnings"])
 
 
 def test_invitation_is_scoped_expires_and_locks_after_submit(
@@ -142,9 +148,35 @@ def test_invitation_is_scoped_expires_and_locks_after_submit(
     assert saved.status_code == 200, saved.text
     assert saved.json()["content"]["cover_strategy_market_neutral"] is True
 
+    locked = client.patch(
+        f"/api/reports/{report_id}/invitations/{created.json()['id']}/permission",
+        json={"can_edit": False},
+    )
+    assert locked.status_code == 200
+    assert locked.json()["can_edit"] is False
+    assert client.put(
+        f"/api/public/fill/{token}",
+        json={"content": data["content"], "risk_items": []},
+    ).status_code == 409
+
+    reopened = client.patch(
+        f"/api/reports/{report_id}/invitations/{created.json()['id']}/permission",
+        json={"can_edit": True},
+    )
+    assert reopened.status_code == 200
+    assert reopened.json()["can_edit"] is True
+
     submitted = client.post(f"/api/public/fill/{token}/submit")
-    assert submitted.status_code == 200
-    assert submitted.json()["submitted_at"] is not None
+    assert submitted.status_code == 422
+    assert submitted.json()["detail"]["valid"] is False
+    assert submitted.json()["detail"]["errors"]
+    # An incomplete attempt must not silently lock the manager out.
+    assert client.get(f"/api/public/fill/{token}").json()["can_edit"] is True
+    locked_after_validation = client.patch(
+        f"/api/reports/{report_id}/invitations/{created.json()['id']}/permission",
+        json={"can_edit": False},
+    )
+    assert locked_after_validation.status_code == 200
     assert client.put(
         f"/api/public/fill/{token}",
         json={"content": data["content"], "risk_items": []},

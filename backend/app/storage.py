@@ -18,6 +18,7 @@ def resolve_data_dir(value: str | None) -> Path:
 
 DATA_DIR = resolve_data_dir(os.getenv("FOF_DATA_DIR"))
 GENERATED_DIR = DATA_DIR / "generated_reports"
+SCORECARD_GENERATED_DIR = DATA_DIR / "generated_scorecards"
 UPLOAD_DIR = DATA_DIR / "uploaded_images"
 NAV_UPLOAD_DIR = DATA_DIR / "uploaded_nav"
 VERSION_STORAGE_DIR = DATA_DIR / "report_versions"

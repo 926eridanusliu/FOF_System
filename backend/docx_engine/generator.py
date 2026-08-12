@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -51,7 +52,9 @@ class DocxGenerator:
     ) -> GenerationResult:
         if isinstance(data, (str, Path)):
             data = json.loads(Path(data).read_text(encoding="utf-8"))
+        data = self._flatten_dynamic_rows(data)
         values, merges, applicability = self._normalize_data(data)
+        dynamic_tables = data.get("__dynamic_tables", {}) if isinstance(data, dict) else {}
         package = DocxPackage(self.template_path)
         try:
             before = package.paragraph_count()
@@ -64,6 +67,20 @@ class DocxGenerator:
             qa = QASectionFiller(package, bookmarks, styles)
             manifest_by_name = {x["bookmark"]: x for x in self.manifest["bookmarks"]}
             results: list[FillResult] = []
+
+            definitions_path = self.manifest_path.with_name("table_definitions.json")
+            if isinstance(dynamic_tables, dict) and definitions_path.is_file():
+                all_definitions = json.loads(definitions_path.read_text(encoding="utf-8"))
+                profile = self.manifest_path.stem.removesuffix("_manifest")
+                for table, rows in dynamic_tables.items():
+                    definition = all_definitions.get(profile, {}).get(str(table))
+                    if definition and definition.get("mode") == "dynamic" and isinstance(rows, list):
+                        results.extend(tables.resize_dynamic_rows(
+                            int(table), rows,
+                            start_row=int(definition["start_row"]),
+                            template_rows=int(definition["template_rows"]),
+                            columns=definition["columns"],
+                        ))
 
             # Every manifest field is reported, even when absent from input.
             for field, meta in manifest_by_name.items():
@@ -187,7 +204,7 @@ class DocxGenerator:
         if "fields" in data:
             values.update(data["fields"])
         for key, value in data.items():
-            if key in {"fields", "tables", "merges", "strategies"}:
+            if key in {"fields", "tables", "merges", "strategies", "__dynamic_tables"}:
                 continue
             if key in strategy_names and isinstance(value, dict):
                 continue
@@ -223,3 +240,44 @@ class DocxGenerator:
             has_value = any(key.startswith(f"strat_{strategy}_") for key in values)
             applicability.setdefault(strategy, has_value)
         return values, merges, applicability
+
+    def _flatten_dynamic_rows(self, data: dict[str, Any]) -> dict[str, Any]:
+        dynamic = data.get("__dynamic_tables", {})
+        definitions_path = self.manifest_path.with_name("table_definitions.json")
+        if not isinstance(dynamic, dict) or not definitions_path.is_file():
+            return data
+        result = dict(data)
+        definitions = json.loads(definitions_path.read_text(encoding="utf-8"))
+        profile = self.manifest_path.stem.removesuffix("_manifest")
+        for table, rows in dynamic.items():
+            definition = definitions.get(profile, {}).get(str(table))
+            if not definition or not isinstance(rows, list):
+                continue
+            start_row = int(definition["start_row"])
+            template_rows = int(definition["template_rows"])
+            for actual_row in range(start_row, start_row + template_rows):
+                for column in definition["columns"]:
+                    result.pop(f"table_{table}_row{actual_row}_col{int(column['col'])}", None)
+            for offset, row in enumerate(rows[:template_rows]):
+                if not isinstance(row, dict):
+                    continue
+                actual_row = int(definition["start_row"]) + offset
+                for column in definition["columns"]:
+                    col = int(column["col"])
+                    input_type = definition.get("row_input_types", {}).get(str(actual_row), column.get("input", "text"))
+                    value = row.get(str(col), row.get(col, ""))
+                    result[f"table_{table}_row{actual_row}_col{col}"] = self._format_table_value(
+                        value, input_type, column.get("output_suffix", "")
+                    )
+        return result
+
+    @staticmethod
+    def _format_table_value(value: Any, input_type: str, output_suffix: str = "") -> Any:
+        if value in (None, ""):
+            return ""
+        text = str(value).strip()
+        if input_type == "percent" and not text.endswith(("%", "％")):
+            return f"{text}%"
+        if output_suffix and re.fullmatch(r"[+-]?\d+(?:\.\d+)?", text):
+            return f"{text}{output_suffix}"
+        return value

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { ManifestField } from '../types'
+import { fieldIsRequired } from '../utils/report'
 
 defineProps<{
   fields: ManifestField[]
@@ -11,15 +12,13 @@ defineProps<{
 <template>
   <div>
     <div v-for="field in fields" :key="field.bookmark" class="question-field">
-      <label>{{ field.prompt || field.bookmark }}</label>
+      <label>{{ field.prompt || field.bookmark }}<span v-if="fieldIsRequired(field)" class="required-mark" aria-label="必填">*</span></label>
       <el-input
         v-model="content[field.bookmark]"
         type="textarea"
         :rows="field.type === 'cover' ? 2 : 4"
         :disabled="disabled"
-        :placeholder="`填写：${field.prompt || field.bookmark}`"
       />
-      <small class="mono">{{ field.bookmark }}</small>
     </div>
   </div>
 </template>

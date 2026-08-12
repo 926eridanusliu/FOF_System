@@ -1,0 +1,23 @@
+FOF 尽调系统直接启动说明
+
+请先完整解压 ZIP，再打开“终端”。不要在 ZIP 预览窗口里运行。
+
+macOS / Linux：
+1. 在终端输入 cd 和一个空格。
+2. 把解压出来的整个 FOF_System 文件夹拖进终端窗口，按回车。
+3. 输入：./start-macos-linux.sh
+4. 浏览器打开：http://127.0.0.1:8000
+
+如果仍提示 no such file or directory，说明终端不在解压后的系统根目录。
+可先输入 ls；正常应能看到 start-macos-linux.sh、backend、frontend。
+
+Windows：
+1. 完整解压 ZIP。
+2. 在解压后的文件夹空白处按住 Shift 并右键，打开 PowerShell。
+3. 输入：powershell -ExecutionPolicy Bypass -File .\start-windows.ps1
+4. 浏览器打开：http://127.0.0.1:8000
+
+第一次启动会创建隔离的 Python 环境并安装依赖，需要可访问公司批准的软件源。
+以后在同一文件夹再次启动会复用环境。按 Ctrl+C 停止。
+
+内网服务器部署请阅读 docs/DEPLOYMENT_WINDOWS.md，不要直接把本机填写链接发给其他电脑。

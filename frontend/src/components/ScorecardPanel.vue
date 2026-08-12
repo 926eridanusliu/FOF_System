@@ -13,6 +13,8 @@ const props = defineProps<{ reportId: number; disabled: boolean }>()
 const loading = ref(true)
 const uploading = ref(false)
 const calculating = ref(false)
+const savingScores = ref(false)
+const generatingExcel = ref(false)
 const scorecard = ref<ReportScorecard>()
 const settings = reactive({
   date_column: '',
@@ -22,9 +24,21 @@ const settings = reactive({
   risk_free_rate_percent: 0,
 })
 const qualitative = reactive<Partial<QualitativeScoreInputs>>({})
+const manualScores = reactive<Record<string, number | null>>({})
 
 const hasResult = computed(() => scorecard.value?.total_score !== null && scorecard.value?.total_score !== undefined)
 const scoreTagType = computed(() => scorecard.value?.admitted ? 'success' : 'danger')
+const manualSummary = computed(() => {
+  const value = (key: string) => Number(manualScores[key] ?? 0)
+  const quantitative = Math.max(value('one_year_return'), value('relative_return'))
+    + value('long_term_return') + value('monthly_win_rate') + value('max_drawdown')
+    + value('sharpe_ratio') + value('calmar_ratio')
+  const qualitativeScore = value('managed_products') + value('investment_manager')
+    + value('research_team') + value('team_stability') + value('allocation_value')
+    + value('risk_control') + value('coinvestment')
+  const deduction = value('compliance_deduction')
+  return { quantitative, qualitative: qualitativeScore, deduction, total: quantitative + qualitativeScore - deduction }
+})
 
 function hydrate(data: ReportScorecard) {
   scorecard.value = data
@@ -36,6 +50,8 @@ function hydrate(data: ReportScorecard) {
   settings.risk_free_rate_percent = saved.risk_free_rate_percent ?? 0
   Object.keys(qualitative).forEach((key) => delete (qualitative as Record<string, unknown>)[key])
   if (saved.qualitative) Object.assign(qualitative, saved.qualitative)
+  Object.keys(manualScores).forEach((key) => delete manualScores[key])
+  for (const item of data.template_items) manualScores[item.key] = data.manual_scores[item.key] ?? null
 }
 
 async function load() {
@@ -141,9 +157,60 @@ async function calculate() {
       qualitative: qualitative as QualitativeScoreInputs,
     }
     hydrate(await api.reports.calculateScorecard(props.reportId, body))
-    ElMessage.success('评分卡已重新计算，生成报告时会自动附在末尾')
+    ElMessage.success('自动测算完成，结果已带入人工评分表；可复核调整后生成 Excel')
   } catch (error) { ElMessage.error(apiMessage(error)) }
   finally { calculating.value = false }
+}
+
+function validatedScores(): Record<string, number> | null {
+  const output: Record<string, number> = {}
+  for (const item of scorecard.value?.template_items || []) {
+    const value = manualScores[item.key]
+    if (typeof value !== 'number' || !Number.isFinite(value)) {
+      ElMessage.warning(`请填写：${item.indicator}`)
+      return null
+    }
+    if (value < 0 || (item.maximum !== null && value > item.maximum)) {
+      ElMessage.warning(item.maximum === null ? `${item.indicator}不能小于0` : `${item.indicator}应在0至${item.maximum}分之间`)
+      return null
+    }
+    output[item.key] = value
+  }
+  return output
+}
+
+async function saveManualScores(showMessage = true): Promise<boolean> {
+  const scores = validatedScores()
+  if (!scores) return false
+  savingScores.value = true
+  try {
+    hydrate(await api.reports.saveManualScorecard(props.reportId, scores))
+    if (showMessage) ElMessage.success('人工评分已保存')
+    return true
+  } catch (error) {
+    ElMessage.error(apiMessage(error))
+    return false
+  } finally { savingScores.value = false }
+}
+
+async function generateExcel() {
+  if (!props.disabled && !(await saveManualScores(false))) return
+  if (props.disabled && !hasResult.value) {
+    ElMessage.warning('该历史报告尚未保存评分结果')
+    return
+  }
+  generatingExcel.value = true
+  try {
+    const result = await api.reports.generateScorecardExcel(props.reportId)
+    const link = document.createElement('a')
+    link.href = result.download_url
+    link.download = result.filename
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    ElMessage.success('已生成并下载独立的准入打分卡 Excel')
+  } catch (error) { ElMessage.error(apiMessage(error)) }
+  finally { generatingExcel.value = false }
 }
 
 onMounted(load)
@@ -153,7 +220,7 @@ onMounted(load)
   <section v-loading="loading" class="scorecard-panel">
     <div class="scorecard-section">
       <div class="scorecard-heading">
-        <div><h2>1. 上传净值数据</h2><p>支持 .xlsx/.csv；自动识别日期、产品净值和可选基准净值列。</p></div>
+        <div><h2>1. 净值自动测算（可选）</h2><p>支持 .xlsx/.csv；测算结果仅作为建议分数，员工仍可在下方复核调整。</p></div>
         <div class="scorecard-actions">
           <label v-if="!disabled" class="file-button" :class="{ loading: uploading }">
             <input type="file" accept=".xlsx,.csv" :disabled="uploading" @change="chooseFile" />
@@ -202,7 +269,7 @@ onMounted(load)
     </div>
 
     <div class="scorecard-section">
-      <div class="scorecard-heading"><div><h2>2. 定性评分表单</h2><p>所有字段均直接对应现有评分卡，不从自由文本中猜测数值。</p></div></div>
+      <div class="scorecard-heading"><div><h2>2. 自动评分所需信息（可选）</h2><p>如使用自动测算，请填写；也可以跳过本区，直接在第3部分人工打分。</p></div></div>
       <el-form label-position="top" class="scorecard-form">
         <h3>管理规模与团队</h3>
         <div class="field-grid field-grid-3">
@@ -249,6 +316,33 @@ onMounted(load)
       <el-button v-if="!disabled" type="primary" size="large" :loading="calculating" @click="calculate">计算并保存评分卡</el-button>
     </div>
 
+    <div class="scorecard-section">
+      <div class="scorecard-heading">
+        <div><h2>3. 员工复核并录入实际得分</h2><p>逐项对应正式 Excel 模板“实际得分”列，所有项目必须填写。</p></div>
+        <div class="scorecard-actions">
+          <el-button v-if="!disabled" :loading="savingScores" @click="saveManualScores(true)">保存评分</el-button>
+          <el-button type="primary" :loading="generatingExcel" :disabled="disabled && !hasResult" @click="generateExcel">生成并下载 Excel</el-button>
+        </div>
+      </div>
+      <el-table :data="scorecard?.template_items || []" border stripe class="manual-score-table">
+        <el-table-column prop="category" label="一级维度" min-width="170" />
+        <el-table-column prop="indicator" label="二级指标" min-width="210">
+          <template #default="{ row }"><span class="required-score">*</span> {{ row.indicator }}<small v-if="row.take_higher">（与近1年收益率取高）</small></template>
+        </el-table-column>
+        <el-table-column label="满分" width="100" align="center"><template #default="{ row }">{{ row.maximum === null ? '扣分' : row.maximum }}</template></el-table-column>
+        <el-table-column label="实际得分" width="210" align="center">
+          <template #default="{ row }"><el-input-number v-model="manualScores[row.key]" :disabled="disabled" :min="0" :max="row.maximum ?? 999" :step="0.5" :precision="2" controls-position="right" /></template>
+        </el-table-column>
+      </el-table>
+      <div class="manual-score-summary">
+        <span>定量 {{ manualSummary.quantitative.toFixed(2) }}/62</span>
+        <span>定性 {{ manualSummary.qualitative.toFixed(2) }}/38</span>
+        <span>扣分 -{{ manualSummary.deduction.toFixed(2) }}</span>
+        <strong>预计总分 {{ manualSummary.total.toFixed(2) }}/100</strong>
+      </div>
+      <p class="scorecard-footnote">评分卡单独生成 Excel，不写入附件1-1或附件1-2的 Word 文档。</p>
+    </div>
+
     <div v-if="hasResult" class="scorecard-section">
       <div class="scorecard-result">
         <div><span>定量</span><strong>{{ scorecard?.quantitative_score }}<small>/62</small></strong></div>
@@ -266,7 +360,7 @@ onMounted(load)
         </el-table-column>
         <el-table-column prop="basis" label="评分依据" min-width="280" />
       </el-table>
-      <p class="scorecard-footnote">生成或预览报告时，当前评分结果会自动作为附录写入 Word 末尾。</p>
+      <p class="scorecard-footnote">此处展示已保存结果；Excel 与附件1-1、附件1-2分别下载。</p>
     </div>
   </section>
 </template>
